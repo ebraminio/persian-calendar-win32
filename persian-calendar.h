@@ -28,7 +28,7 @@
 // Sample values for the functions (useful for debugging) are given in
 // Appendix C of the book.
 
-#define PERSIAN_EPOCH 226896  // Precalculated result from Calendrical Calculations
+#define PERSIAN_EPOCH 226896 // Precalculated result from Calendrical Calculations
 
 #define SUPPORTED_FIRST_YEAR 1178
 #define SUPPORTED_LAST_YEAR 3000
@@ -49,94 +49,101 @@ const int NON_LEAP_CORRECTION[] = {
     2620, 2624, 2653, 2657, 2686, 2690,
     2719, 2723, 2748, 2752, 2756, 2781, 2785, 2789,
     2818, 2822, 2847, 2851, 2855, 2880, 2884, 2888,
-    2913, 2917, 2921, 2946, 2950, 2954, 2979, 2983, 2987
-};
+    2913, 2917, 2921, 2946, 2950, 2954, 2979, 2983, 2987};
 
-typedef struct {
+typedef struct
+{
     int year;
     int month;
     int day;
 } PersianDate;
 
-bool is_in_non_leap_correction(int year) {
-    if (year == 0) return false;
+bool is_in_non_leap_correction(int year)
+{
+    if (year == 0)
+        return false;
     for (int i = 0; i < sizeof(NON_LEAP_CORRECTION) / sizeof(int); ++i)
-        if (NON_LEAP_CORRECTION[i] == year) return true;
+        if (NON_LEAP_CORRECTION[i] == year)
+            return true;
     return false;
 }
 
-int div_ceil(int a, int b) {
-    float v = (float)a / b;
-    return (float)(int)v == v ? v : v + 1;
+int div_ceil(int a, int b)
+{
+    return __builtin_ceil((double)a / b);
+    // float v = (float)a / b;
+    // return (float)(int)v == v ? v : v + 1;
 }
 
-int fixed_from_persian_fast(PersianDate p_date) {
+int fixed_from_persian_fast(PersianDate p_date)
+{
     int year = p_date.year;
     int month = p_date.month;
     int day = p_date.day;
-    
+
     int new_year = PERSIAN_EPOCH - 1 + 365 * (year - 1) + (8 * year + 21) / 33;
-    
-    if (is_in_non_leap_correction(year - 1)) {
+
+    if (is_in_non_leap_correction(year - 1))
+    {
         new_year -= 1;
     }
 
     // Days in prior months this year
     int days_in_prior_months;
-    if (month <= 7) {
+    if (month <= 7)
         days_in_prior_months = 31 * (month - 1);
-    } else {
+    else
         days_in_prior_months = 30 * (month - 1) + 6;
-    }
-    
-    return (new_year - 1)  // Days in prior years
-           + days_in_prior_months  // Days in prior months this year
-           + day;  // Days so far this month
+
+    return (new_year - 1)         // Days in prior years
+           + days_in_prior_months // Days in prior months this year
+           + day;                 // Days so far this month
 }
 
-PersianDate persian_fast_from_fixed(int date) {    
+PersianDate persian_fast_from_fixed(int date)
+{
     // Calculate first day of year 1
     PersianDate first_day = {1, 1, 1};
     int first_fixed = fixed_from_persian_fast(first_day);
-    
+
     int days_since_epoch = date - first_fixed;
     int year = 1 + (33 * days_since_epoch + 3) / 12053;
-    
+
     // Calculate day of year
     PersianDate new_year_day = {year, 1, 1};
     int day_of_year = date - fixed_from_persian_fast(new_year_day) + 1;
-    
+
     // Handle leap year correction
-    if (day_of_year == 366 && is_in_non_leap_correction(year)) {
+    if (day_of_year == 366 && is_in_non_leap_correction(year))
+    {
         year += 1;
         day_of_year = 1;
     }
-    
+
     // Calculate month
     int month;
-    if (day_of_year <= 186) {
+    if (day_of_year <= 186)
         month = div_ceil(day_of_year, 31);
-    } else {
+    else
         month = div_ceil(day_of_year - 6, 30);
-    }
-    
+
     // Calculate day by subtraction
     PersianDate month_start = {year, month, 1};
     int day = date - fixed_from_persian_fast(month_start) + 1;
 
-    return (PersianDate) {
+    return (PersianDate){
         .year = year,
         .month = month,
         .day = day,
     };
 }
 
-bool persian_fast_leap_year(int p_year) {
-    if (is_in_non_leap_correction(p_year)) {
+bool persian_fast_leap_year(int p_year)
+{
+    if (is_in_non_leap_correction(p_year))
         return false;
-    } else if (is_in_non_leap_correction(p_year - 1)) {
+    else if (is_in_non_leap_correction(p_year - 1))
         return true;
-    } else {
+    else
         return (25 * p_year + 11) % 33 < 8;
-    }
 }
