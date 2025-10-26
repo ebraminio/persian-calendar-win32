@@ -110,7 +110,11 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
+#ifdef _WIN64
+void _WinMainCRTStartup()
+#else
 void WinMainCRTStartup()
+#endif
 {
     WNDCLASSEX wc = {0};
     wc.cbSize = sizeof(WNDCLASSEX);
