@@ -9,7 +9,8 @@ HICON CreateTextIcon(HDC hdc, const wchar_t *text)
 {
     const int size = 128;
     HBITMAP hbmColor = CreateCompatibleBitmap(hdc, size, size);
-    HBITMAP hbmMask = CreateCompatibleBitmap(hdc, size, size);
+    HBITMAP hbmMask = CreateBitmap(size, size, 1, 1, NULL);
+
     HDC memDC = CreateCompatibleDC(hdc);
     HGDIOBJ oldBmp = SelectObject(memDC, hbmColor);
     RECT rc = {0, 0, size, size};
@@ -40,6 +41,9 @@ HICON CreateTextIcon(HDC hdc, const wchar_t *text)
     SelectObject(memDC, oldFont);
     DeleteObject(hFont);
 
+    SelectObject(memDC, oldBmp);
+    DeleteDC(memDC);
+
     ICONINFO iconInfo = {};
     iconInfo.fIcon = TRUE;
     iconInfo.hbmColor = hbmColor;
@@ -47,8 +51,6 @@ HICON CreateTextIcon(HDC hdc, const wchar_t *text)
 
     HICON hIcon = CreateIconIndirect(&iconInfo);
 
-    SelectObject(memDC, oldBmp);
-    DeleteDC(memDC);
     DeleteObject(hbmColor);
     DeleteObject(hbmMask);
     return hIcon;
