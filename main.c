@@ -2,6 +2,7 @@
 #define VC_EXTRALEAN
 #include <windows.h>
 #include <shellapi.h>
+#include <wchar.h>
 #include "persian-calendar.h"
 
 HICON CreateTextIcon(HDC hdc, const wchar_t *text)
@@ -39,7 +40,7 @@ HICON CreateTextIcon(HDC hdc, const wchar_t *text)
     SelectObject(memDC, oldFont);
     DeleteObject(hFont);
 
-    ICONINFO iconInfo = {0};
+    ICONINFO iconInfo = {};
     iconInfo.fIcon = TRUE;
     iconInfo.hbmColor = hbmColor;
     iconInfo.hbmMask = hbmMask;
@@ -67,25 +68,117 @@ static int getTodayFixed()
     return (int)(fileTimeValue / (10000000LL * 60 * 60 * 24)) + 584389;
 }
 
-const wchar_t *days[] = {
-    L"۰", L"۱", L"۲", L"۳", L"۴", L"۵", L"۶", L"۷", L"۸", L"۹", L"۱۰", L"۱۱",
-    L"۱۲", L"۱۳", L"۱۴", L"۱۵", L"۱۶", L"۱۷", L"۱۸", L"۱۹", L"۲۰", L"۲۱",
-    L"۲۲", L"۲۳", L"۲۴", L"۲۵", L"۲۶", L"۲۷", L"۲۸", L"۲۹", L"۳۰", L"۳۱",
+static bool local_digits = true;
+void apply_local_digits(wchar_t *buf)
+{
+    if (local_digits)
+        for (unsigned i = 0; buf[i]; ++i)
+            buf[i] = buf[i] - L'0' + L'۰';
+}
+
+const wchar_t *months[] = {
+    L"فروردین",
+    L"اردیبهشت",
+    L"خرداد",
+    L"تیر",
+    L"مرداد",
+    L"شهریور",
+    L"مهر",
+    L"آبان",
+    L"آذر",
+    L"دی",
+    L"بهمن",
+    L"اسفند",
 };
+
+static HMENU hmenu = 0;
+const wchar_t lrm = 0x200F;
+const int menu_id_start = 1000;
+static int local_digits_id = 0;
+static int exit_id = 0;
+static void create_menu(PersianDate date)
+{
+    HMENU prevhmenu = hmenu;
+    hmenu = CreatePopupMenu();
+    int id = menu_id_start;
+    {
+        MENUITEMINFOW item = {};
+        item.cbSize = sizeof(MENUITEMINFO);
+        item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
+        item.fType = 0;
+        item.fState = 0;
+        item.wID = id;
+
+        wchar_t day[10];
+        swprintf(day, sizeof(day), L"%d", date.day);
+        apply_local_digits(day);
+
+        wchar_t year[10];
+        swprintf(year, sizeof(year), L"%d", date.year);
+        apply_local_digits(year);
+
+        wchar_t buf[255];
+        swprintf(buf, sizeof(buf), L"%lc%ls %ls %ls", lrm,
+                 day, months[date.month - 1], year);
+
+        item.dwTypeData = buf;
+        item.fState |= MFS_DISABLED;
+        InsertMenuItemW(hmenu, id, TRUE, &item);
+        ++id;
+    }
+    InsertMenu(hmenu, id++, MF_SEPARATOR, TRUE, "");
+    ++id;
+    {
+        MENUITEMINFOW item = {};
+        item.cbSize = sizeof(MENUITEMINFO);
+        item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
+        item.fType = 0;
+        item.fState = 0;
+        item.wID = id;
+        item.dwTypeData = L"اعداد فارسی";
+        if (local_digits)
+            item.fState |= MFS_CHECKED;
+        InsertMenuItemW(hmenu, id, TRUE, &item);
+        local_digits_id = id;
+        ++id;
+    }
+    InsertMenu(hmenu, id++, MF_SEPARATOR, TRUE, "");
+    ++id;
+    {
+        MENUITEMINFOW item = {};
+        item.cbSize = sizeof(MENUITEMINFO);
+        item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
+        item.fType = 0;
+        item.fState = 0;
+        item.wID = id;
+        item.dwTypeData = L"خروج";
+        InsertMenuItemW(hmenu, id, TRUE, &item);
+        exit_id = id;
+        ++id;
+    }
+    if (prevhmenu)
+        DestroyMenu(prevhmenu);
+}
 
 static void update(HWND hwnd, NOTIFYICONDATA *nid)
 {
     PersianDate date = persian_fast_from_fixed(getTodayFixed());
+    create_menu(date);
     HDC hdc = GetDC(hwnd);
-    HICON icon = CreateTextIcon(hdc, days[date.day]);
-    ReleaseDC(hwnd, hdc);
 
-    if (nid->hIcon) DestroyIcon(nid->hIcon);
+    wchar_t day[10];
+    swprintf(day, sizeof(day), L"%d", date.day);
+    apply_local_digits(day);
+
+    HICON icon = CreateTextIcon(hdc, day);
+    ReleaseDC(hwnd, hdc);
+    if (nid->hIcon)
+        DestroyIcon(nid->hIcon);
     nid->hIcon = icon;
     Shell_NotifyIcon(NIM_MODIFY, nid);
 }
 
-NOTIFYICONDATA nid = {0};
+NOTIFYICONDATA nid = {};
 #define ID_TIMER 1
 #define ID_NOTIFY_ICON_CLICK (WM_USER + 1)
 const char *app = "Persian Calendar";
@@ -104,7 +197,34 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         break;
     case ID_NOTIFY_ICON_CLICK:
         if (lparam == WM_LBUTTONUP || lparam == WM_RBUTTONUP)
-            DestroyWindow(hwnd);
+        {
+            POINT p;
+            GetCursorPos(&p);
+            SetForegroundWindow(hwnd);
+            WORD cmd = TrackPopupMenu(hmenu, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_NONOTIFY,
+                                      p.x, p.y, 0, hwnd, 0);
+            SendMessage(hwnd, WM_COMMAND, cmd, 0);
+        }
+        break;
+    case WM_COMMAND:
+        if (wparam >= menu_id_start)
+        {
+            MENUITEMINFO item = {
+                .cbSize = sizeof(MENUITEMINFO),
+                .fMask = MIIM_ID | MIIM_DATA,
+            };
+            if (GetMenuItemInfo(hmenu, wparam, FALSE, &item))
+            {
+                if (item.wID == local_digits_id)
+                {
+                    local_digits = !local_digits;
+                    update(hwnd, &nid);
+                }
+                else if (item.wID == exit_id)
+                    PostQuitMessage(0);
+            }
+            return 0;
+        }
         break;
     }
     return DefWindowProc(hwnd, msg, wparam, lparam);
@@ -116,15 +236,17 @@ void _WinMainCRTStartup()
 void WinMainCRTStartup()
 #endif
 {
-    WNDCLASSEX wc = {0};
+    WNDCLASSEX wc = {};
     wc.cbSize = sizeof(WNDCLASSEX);
     wc.hInstance = GetModuleHandle(0);
     wc.lpfnWndProc = WndProc;
     wc.lpszClassName = app;
-    if (!RegisterClassEx(&wc)) ExitProcess(1);
+    if (!RegisterClassEx(&wc))
+        ExitProcess(1);
 
     HWND hwnd = CreateWindowEx(0, app, 0, 0, 0, 0, 0, 0, 0, 0, GetModuleHandle(0), 0);
-    if (!hwnd) ExitProcess(1);
+    if (!hwnd)
+        ExitProcess(1);
 
     nid.cbSize = sizeof(NOTIFYICONDATA);
     nid.hWnd = hwnd;
