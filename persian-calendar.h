@@ -28,6 +28,8 @@
 // Sample values for the functions (useful for debugging) are given in
 // Appendix C of the book.
 
+#include <stdbool.h>
+
 #define PERSIAN_EPOCH 226896 // Precalculated result from Calendrical Calculations
 
 #define SUPPORTED_FIRST_YEAR 1178
