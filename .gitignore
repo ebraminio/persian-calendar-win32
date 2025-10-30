@@ -1,3 +1,9 @@
 persian-calendar.exe
 .vscode/
 .DS_Store
+
+# Xmake cache
+.xmake/
+build/
+
+compile_commands.json

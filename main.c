@@ -1,7 +1,9 @@
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
+
 #include <windows.h>
 #include <shellapi.h>
+#include <Shlwapi.h>
 #include <wchar.h>
 #include "persian-calendar.h"
 
@@ -137,15 +139,15 @@ static void create_menu(PersianDate date)
         item.wID = id;
 
         wchar_t day[10];
-        swprintf(day, sizeof(day), L"%d", date.day);
+        wnsprintfW(day, sizeof(day), L"%d", date.day);
         apply_local_digits(day);
 
         wchar_t year[10];
-        swprintf(year, sizeof(year), L"%d", date.year);
+        wnsprintfW(year, sizeof(year), L"%d", date.year);
         apply_local_digits(year);
 
         wchar_t buf[255];
-        swprintf(buf, sizeof(buf), L"%lc%ls %ls %ls", lrm,
+        wnsprintfW(buf, sizeof(buf), L"%lc%ls %ls %ls", lrm,
                  day, months[date.month - 1], year);
 
         item.dwTypeData = buf;
@@ -194,7 +196,7 @@ static void update(HWND hwnd, NOTIFYICONDATA *nid)
     HDC hdc = GetDC(hwnd);
 
     wchar_t day[10];
-    swprintf(day, sizeof(day), L"%d", date.day);
+    wnsprintfW(day, sizeof(day), L"%d", date.day);
     apply_local_digits(day);
 
     HICON icon = CreateTextIcon(hdc, day);
