@@ -3,7 +3,7 @@
 
 #include <windows.h>
 #include <shellapi.h>
-#include <Shlwapi.h>
+#include <shlwapi.h>
 #include <wchar.h>
 #include "persian-calendar.h"
 
