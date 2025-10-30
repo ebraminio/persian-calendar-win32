@@ -72,9 +72,9 @@ bool is_in_non_leap_correction(int year)
 
 int div_ceil(int a, int b)
 {
-    return __builtin_ceil((double)a / b);
-    // float v = (float)a / b;
-    // return (float)(int)v == v ? v : v + 1;
+    // return __builtin_ceil((double)a / b);
+    float v = (float)a / b;
+    return (float)(int)v == v ? v : v + 1;
 }
 
 int fixed_from_persian_fast(PersianDate p_date)
