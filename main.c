@@ -10,8 +10,6 @@
 HICON CreateTextIcon(HDC hdc, const wchar_t *text)
 {
     const int size = 128;
-    const int outlineWidth = 8;
-
     HBITMAP hbmColor = CreateCompatibleBitmap(hdc, size, size);
     HBITMAP hbmMask = CreateBitmap(size, size, 1, 1, NULL);
 
@@ -32,35 +30,6 @@ HICON CreateTextIcon(HDC hdc, const wchar_t *text)
         CLEARTYPE_QUALITY, VARIABLE_PITCH, L"Calibri");
     HFONT oldFont = (HFONT)SelectObject(memDC, hFont);
 
-    SetTextColor(memDC, RGB(0, 0, 0));
-    RECT rcO = rc;
-
-    rcO = rc;
-    OffsetRect(&rcO, -outlineWidth, 0);
-    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc;
-    OffsetRect(&rcO, outlineWidth, 0);
-    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc;
-    OffsetRect(&rcO, 0, -outlineWidth);
-    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc;
-    OffsetRect(&rcO, 0, outlineWidth);
-    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc;
-    OffsetRect(&rcO, -outlineWidth, -outlineWidth);
-    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc;
-    OffsetRect(&rcO, outlineWidth, -outlineWidth);
-    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc;
-    OffsetRect(&rcO, -outlineWidth, outlineWidth);
-    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc;
-    OffsetRect(&rcO, outlineWidth, outlineWidth);
-    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-
-    SetTextColor(memDC, RGB(255, 255, 255));
     DrawTextW(memDC, text, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
     SelectObject(memDC, hbmMask);
@@ -68,33 +37,6 @@ HICON CreateTextIcon(HDC hdc, const wchar_t *text)
     FillRect(memDC, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
 
     SetTextColor(memDC, RGB(0, 0, 0));
-
-    rcO = rc;
-    rcO = rc;
-    OffsetRect(&rcO, -outlineWidth, 0);
-    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc;
-    OffsetRect(&rcO, outlineWidth, 0);
-    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc;
-    OffsetRect(&rcO, 0, -outlineWidth);
-    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc;
-    OffsetRect(&rcO, 0, outlineWidth);
-    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc;
-    OffsetRect(&rcO, -outlineWidth, -outlineWidth);
-    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc;
-    OffsetRect(&rcO, outlineWidth, -outlineWidth);
-    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc;
-    OffsetRect(&rcO, -outlineWidth, outlineWidth);
-    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc;
-    OffsetRect(&rcO, outlineWidth, outlineWidth);
-    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-
     DrawTextW(memDC, text, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
     SelectObject(memDC, oldFont);
