@@ -8,5 +8,5 @@ i686-w64-mingw32-gcc main.c -o persian-calendar.exe \
   -lkernel32 -luser32 -lshell32 -lgdi32 -lshlwapi \
   -Wl,-e,_WinMainCRTStartup \
   -Wl,-subsystem,windows \
-  -fmerge-all-constants -fno-plt # && wine persian-calendar.exe
-# -nostdlib -nodefaultlibs \
+  -nostdlib -nodefaultlibs \
+  -fmerge-all-constants -fno-plt && wine persian-calendar.exe

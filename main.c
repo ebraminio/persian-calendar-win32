@@ -35,14 +35,30 @@ HICON CreateTextIcon(HDC hdc, const wchar_t *text)
     SetTextColor(memDC, RGB(0, 0, 0));
     RECT rcO = rc;
 
-    rcO = rc; OffsetRect(&rcO, -outlineWidth, 0); DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc; OffsetRect(&rcO, outlineWidth, 0); DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc; OffsetRect(&rcO, 0, -outlineWidth); DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc; OffsetRect(&rcO, 0, outlineWidth); DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc; OffsetRect(&rcO, -outlineWidth, -outlineWidth); DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc; OffsetRect(&rcO, outlineWidth, -outlineWidth); DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc; OffsetRect(&rcO, -outlineWidth, outlineWidth); DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc; OffsetRect(&rcO, outlineWidth, outlineWidth); DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    rcO = rc;
+    OffsetRect(&rcO, -outlineWidth, 0);
+    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    rcO = rc;
+    OffsetRect(&rcO, outlineWidth, 0);
+    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    rcO = rc;
+    OffsetRect(&rcO, 0, -outlineWidth);
+    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    rcO = rc;
+    OffsetRect(&rcO, 0, outlineWidth);
+    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    rcO = rc;
+    OffsetRect(&rcO, -outlineWidth, -outlineWidth);
+    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    rcO = rc;
+    OffsetRect(&rcO, outlineWidth, -outlineWidth);
+    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    rcO = rc;
+    OffsetRect(&rcO, -outlineWidth, outlineWidth);
+    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    rcO = rc;
+    OffsetRect(&rcO, outlineWidth, outlineWidth);
+    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
     SetTextColor(memDC, RGB(255, 255, 255));
     DrawTextW(memDC, text, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
@@ -54,14 +70,30 @@ HICON CreateTextIcon(HDC hdc, const wchar_t *text)
     SetTextColor(memDC, RGB(0, 0, 0));
 
     rcO = rc;
-    rcO = rc; OffsetRect(&rcO, -outlineWidth, 0); DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc; OffsetRect(&rcO, outlineWidth, 0); DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc; OffsetRect(&rcO, 0, -outlineWidth); DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc; OffsetRect(&rcO, 0, outlineWidth); DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc; OffsetRect(&rcO, -outlineWidth, -outlineWidth); DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc; OffsetRect(&rcO, outlineWidth, -outlineWidth); DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc; OffsetRect(&rcO, -outlineWidth, outlineWidth); DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-    rcO = rc; OffsetRect(&rcO, outlineWidth, outlineWidth); DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    rcO = rc;
+    OffsetRect(&rcO, -outlineWidth, 0);
+    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    rcO = rc;
+    OffsetRect(&rcO, outlineWidth, 0);
+    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    rcO = rc;
+    OffsetRect(&rcO, 0, -outlineWidth);
+    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    rcO = rc;
+    OffsetRect(&rcO, 0, outlineWidth);
+    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    rcO = rc;
+    OffsetRect(&rcO, -outlineWidth, -outlineWidth);
+    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    rcO = rc;
+    OffsetRect(&rcO, outlineWidth, -outlineWidth);
+    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    rcO = rc;
+    OffsetRect(&rcO, -outlineWidth, outlineWidth);
+    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    rcO = rc;
+    OffsetRect(&rcO, outlineWidth, outlineWidth);
+    DrawTextW(memDC, text, -1, &rcO, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
     DrawTextW(memDC, text, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
@@ -86,15 +118,16 @@ HICON CreateTextIcon(HDC hdc, const wchar_t *text)
 static int getTodayFixed()
 {
     SYSTEMTIME st;
-    FILETIME ft;
-    char buffer[256];
     GetLocalTime(&st);
-    SystemTimeToFileTime(&st, &ft);
-    ULARGE_INTEGER uli;
-    uli.LowPart = ft.dwLowDateTime;
-    uli.HighPart = ft.dwHighDateTime;
-    LONGLONG fileTimeValue = uli.QuadPart;
-    return (int)(fileTimeValue / (10000000LL * 60 * 60 * 24)) + 584389;
+    int y = st.wYear;
+    int m = st.wMonth;
+    int d = st.wDay;
+    if (m < 3)
+    {
+        y--;
+        m += 12;
+    }
+    return 365 * y + y / 4 - y / 100 + y / 400 + (153 * (m - 3) + 2) / 5 + d - 1 - 305;
 }
 
 static bool local_digits = true;
@@ -148,7 +181,7 @@ static void create_menu(PersianDate date)
 
         wchar_t buf[255];
         wnsprintfW(buf, sizeof(buf), L"%lc%ls %ls %ls", lrm,
-                 day, months[date.month - 1], year);
+                   day, months[date.month - 1], year);
 
         item.dwTypeData = buf;
         item.fState |= MFS_DISABLED;
