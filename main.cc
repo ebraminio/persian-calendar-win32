@@ -5,6 +5,7 @@
 #include <shellapi.h>
 #include <shlwapi.h>
 #include <wchar.h>
+#include <shellscalingapi.h>
 #include "persian-calendar.h"
 
 // static void log(const char *s) {
@@ -12,10 +13,12 @@
 //     WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), s, (DWORD)lstrlenA(s), &written, NULL);
 // }
 
-extern "C" void* memset(void* s, int c, size_t sz) {
+extern "C" void *memset(void *s, int c, size_t sz)
+{
     char *p = (char *)s;
     char x = c & 0xFF;
-    while (sz--) *p++ = x;
+    while (sz--)
+        *p++ = x;
     return s;
 }
 
@@ -323,6 +326,35 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
+void EnableDpiAwareness()
+{
+    HMODULE hUser32 = LoadLibraryW(L"user32.dll");
+    if (hUser32)
+    {
+        typedef BOOL(WINAPI * SetProcessDpiAwarenessContext_t)(DPI_AWARENESS_CONTEXT);
+        auto pSetProcessDpiAwarenessContext =
+            (SetProcessDpiAwarenessContext_t)GetProcAddress(hUser32, "SetProcessDpiAwarenessContext");
+        if (pSetProcessDpiAwarenessContext)
+            pSetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+        else
+        {
+            HMODULE hShcore = LoadLibraryW(L"shcore.dll");
+            if (hShcore)
+            {
+                typedef HRESULT(WINAPI * SetProcessDpiAwareness_t)(PROCESS_DPI_AWARENESS);
+                auto pSetProcessDpiAwareness =
+                    (SetProcessDpiAwareness_t)GetProcAddress(hShcore, "SetProcessDpiAwareness");
+                if (pSetProcessDpiAwareness)
+                    pSetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+                FreeLibrary(hShcore);
+            }
+            else
+                SetProcessDPIAware(); // Windows Vista/7 fallback
+        }
+        FreeLibrary(hUser32);
+    }
+}
+
 #ifdef _WIN64
 extern "C" void _WinMainCRTStartup()
 #else
@@ -340,6 +372,7 @@ extern "C" void WinMainCRTStartup()
     HWND hwnd = CreateWindowExW(0, app, 0, 0, 0, 0, 0, 0, 0, 0, GetModuleHandle(0), 0);
     if (!hwnd)
         ExitProcess(1);
+    EnableDpiAwareness();
 
     with_registry([](HKEY hKey)
                   { init_global_variable(hKey); });
