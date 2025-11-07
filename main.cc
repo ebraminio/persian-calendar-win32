@@ -147,7 +147,7 @@ static void create_menu(PersianDate date)
         InsertMenuItemW(hmenu, id, TRUE, &item);
         ++id;
     }
-    InsertMenu(hmenu, id++, MF_SEPARATOR, TRUE, "");
+    InsertMenuW(hmenu, id++, MF_SEPARATOR, TRUE, const_cast<LPWSTR>(L""));
     ++id;
     {
         MENUITEMINFOW item = {};
@@ -177,7 +177,7 @@ static void create_menu(PersianDate date)
         black_background_id = id;
         ++id;
     }
-    InsertMenu(hmenu, id++, MF_SEPARATOR, TRUE, "");
+    InsertMenuW(hmenu, id++, MF_SEPARATOR, TRUE, const_cast<LPWSTR>(L""));
     ++id;
     {
         MENUITEMINFOW item = {};
@@ -266,7 +266,7 @@ static void init_global_variable(HKEY hKey)
 NOTIFYICONDATA nid = {};
 #define ID_TIMER 1
 #define ID_NOTIFY_ICON_CLICK (WM_USER + 1)
-const char *app = "Persian Calendar";
+LPCWSTR app = const_cast<LPWSTR>(L"Persian Calendar");
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg)
@@ -329,15 +329,15 @@ extern "C" void _WinMainCRTStartup()
 extern "C" void WinMainCRTStartup()
 #endif
 {
-    WNDCLASSEX wc = {};
+    WNDCLASSEXW wc = {};
     wc.cbSize = sizeof(WNDCLASSEX);
     wc.hInstance = GetModuleHandle(0);
     wc.lpfnWndProc = WndProc;
     wc.lpszClassName = app;
-    if (!RegisterClassEx(&wc))
+    if (!RegisterClassExW(&wc))
         ExitProcess(1);
 
-    HWND hwnd = CreateWindowEx(0, app, 0, 0, 0, 0, 0, 0, 0, 0, GetModuleHandle(0), 0);
+    HWND hwnd = CreateWindowExW(0, app, 0, 0, 0, 0, 0, 0, 0, 0, GetModuleHandle(0), 0);
     if (!hwnd)
         ExitProcess(1);
 
@@ -362,6 +362,6 @@ extern "C" void WinMainCRTStartup()
     Shell_NotifyIcon(NIM_DELETE, &nid);
     DestroyIcon(nid.hIcon);
 
-    UnregisterClass(app, GetModuleHandle(0));
+    UnregisterClassW(app, GetModuleHandle(0));
     ExitProcess(0);
 }
