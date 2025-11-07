@@ -243,7 +243,7 @@ static void store_bool_in_registry(HKEY hKey, LPCWSTR key, bool value)
     DWORD dword = value;
     RegSetValueExW(
         hKey,
-        local_digits_key,
+        key,
         0,
         REG_DWORD,
         reinterpret_cast<const BYTE *>(&dword),
