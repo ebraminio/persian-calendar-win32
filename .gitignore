@@ -1,6 +1,7 @@
 persian-calendar.exe
 .vscode/
 .DS_Store
+main.obj
 
 # Xmake cache
 .xmake/
