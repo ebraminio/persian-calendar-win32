@@ -323,18 +323,6 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-BOOL EnableDarkMode(HWND hwnd, BOOL enable)
-{
-    typedef BOOL (WINAPI *AllowDarkModeForWindowProc)(HWND, BOOL);
-    HMODULE hUxtheme = LoadLibraryW(L"uxtheme.dll");
-    if (!hUxtheme) return FALSE;
-
-    auto fn = (AllowDarkModeForWindowProc)GetProcAddress(hUxtheme, MAKEINTRESOURCEA(135)); // undocumented
-    if (!fn) return FALSE;
-
-    return fn(hwnd, enable);
-}
-
 #ifdef _WIN64
 extern "C" void _WinMainCRTStartup()
 #else
@@ -352,9 +340,6 @@ extern "C" void WinMainCRTStartup()
     HWND hwnd = CreateWindowExW(0, app, 0, 0, 0, 0, 0, 0, 0, 0, GetModuleHandle(0), 0);
     if (!hwnd)
         ExitProcess(1);
-
-    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-    EnableDarkMode(hwnd, TRUE);
 
     with_registry([](HKEY hKey)
                   { init_global_variable(hKey); });
