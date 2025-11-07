@@ -1,6 +1,7 @@
 #!/bin/bash
 # x86_64-w64-mingw32-gcc
-i686-w64-mingw32-gcc main.c -o persian-calendar.exe \
+i686-w64-mingw32-gcc main.cc -o persian-calendar.exe \
+  -fno-rtti -fno-exceptions \
   -Oz -s -ffunction-sections -fdata-sections \
   -Wl,--gc-sections -Wl,--strip-all \
   -nostartfiles -fno-unwind-tables -fno-asynchronous-unwind-tables \

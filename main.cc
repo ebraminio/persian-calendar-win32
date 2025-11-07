@@ -145,7 +145,7 @@ static void create_menu(PersianDate date)
         item.fType = 0;
         item.fState = 0;
         item.wID = id;
-        item.dwTypeData = L"اعداد فارسی";
+        item.dwTypeData = const_cast<LPWSTR>(L"اعداد فارسی");
         if (local_digits)
             item.fState |= MFS_CHECKED;
         InsertMenuItemW(hmenu, id, TRUE, &item);
@@ -159,7 +159,7 @@ static void create_menu(PersianDate date)
         item.fType = 0;
         item.fState = 0;
         item.wID = id;
-        item.dwTypeData = L"پیش‌زمینه سیاه آیکون";
+        item.dwTypeData = const_cast<LPWSTR>(L"پیش‌زمینهٔ سیاه آیکون");
         if (black_background)
             item.fState |= MFS_CHECKED;
         InsertMenuItemW(hmenu, id, TRUE, &item);
@@ -175,7 +175,7 @@ static void create_menu(PersianDate date)
         item.fType = 0;
         item.fState = 0;
         item.wID = id;
-        item.dwTypeData = L"خروج";
+        item.dwTypeData = const_cast<LPWSTR>(L"خروج");
         InsertMenuItemW(hmenu, id, TRUE, &item);
         exit_id = id;
         ++id;
@@ -260,9 +260,9 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 }
 
 #ifdef _WIN64
-void _WinMainCRTStartup()
+extern "C" void _WinMainCRTStartup()
 #else
-void WinMainCRTStartup()
+extern "C" void WinMainCRTStartup()
 #endif
 {
     WNDCLASSEX wc = {};
