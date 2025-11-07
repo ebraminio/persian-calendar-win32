@@ -102,6 +102,7 @@ const wchar_t *months[] = {
 };
 
 static HMENU hmenu = 0;
+const wchar_t rlm = 0x200F;
 const int menu_id_start = 1000;
 static int local_digits_id = 0;
 static int black_background_id = 0;
@@ -128,7 +129,7 @@ static void create_menu(PersianDate date)
         apply_local_digits(year);
 
         wchar_t buf[255];
-        wnsprintfW(buf, sizeof(buf), L"%ls %ls %ls",
+        wnsprintfW(buf, sizeof(buf), L"%lc%ls %ls %ls", rlm,
                    day, months[date.month - 1], year);
 
         item.dwTypeData = buf;
