@@ -329,30 +329,13 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 void EnableDpiAwareness()
 {
     HMODULE hUser32 = LoadLibraryW(L"user32.dll");
-    if (hUser32)
-    {
-        typedef BOOL(WINAPI * SetProcessDpiAwarenessContext_t)(DPI_AWARENESS_CONTEXT);
-        auto pSetProcessDpiAwarenessContext =
-            (SetProcessDpiAwarenessContext_t)GetProcAddress(hUser32, "SetProcessDpiAwarenessContext");
-        if (pSetProcessDpiAwarenessContext)
-            pSetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-        else
-        {
-            HMODULE hShcore = LoadLibraryW(L"shcore.dll");
-            if (hShcore)
-            {
-                typedef HRESULT(WINAPI * SetProcessDpiAwareness_t)(PROCESS_DPI_AWARENESS);
-                auto pSetProcessDpiAwareness =
-                    (SetProcessDpiAwareness_t)GetProcAddress(hShcore, "SetProcessDpiAwareness");
-                if (pSetProcessDpiAwareness)
-                    pSetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
-                FreeLibrary(hShcore);
-            }
-            else
-                SetProcessDPIAware(); // Windows Vista/7 fallback
-        }
-        FreeLibrary(hUser32);
-    }
+    if (!hUser32) return;
+    typedef BOOL(WINAPI * SetProcessDpiAwarenessContext_t)(DPI_AWARENESS_CONTEXT);
+    auto pSetProcessDpiAwarenessContext =
+        (SetProcessDpiAwarenessContext_t)GetProcAddress(hUser32, "SetProcessDpiAwarenessContext");
+    if (pSetProcessDpiAwarenessContext)
+        pSetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+    FreeLibrary(hUser32);
 }
 
 #ifdef _WIN64
