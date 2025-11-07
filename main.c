@@ -96,7 +96,6 @@ const wchar_t *months[] = {
 };
 
 static HMENU hmenu = 0;
-const wchar_t lrm = 0x200F;
 const int menu_id_start = 1000;
 static int local_digits_id = 0;
 static int exit_id = 0;
@@ -122,7 +121,7 @@ static void create_menu(PersianDate date)
         apply_local_digits(year);
 
         wchar_t buf[255];
-        wnsprintfW(buf, sizeof(buf), L"%lc%ls %ls %ls", lrm,
+        wnsprintfW(buf, sizeof(buf), L"%ls %ls %ls",
                    day, months[date.month - 1], year);
 
         item.dwTypeData = buf;
@@ -205,7 +204,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
             POINT p;
             GetCursorPos(&p);
             SetForegroundWindow(hwnd);
-            WORD cmd = TrackPopupMenu(hmenu, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_NONOTIFY,
+            WORD cmd = TrackPopupMenu(hmenu, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_NONOTIFY | TPM_LAYOUTRTL,
                                       p.x, p.y, 0, hwnd, 0);
             SendMessage(hwnd, WM_COMMAND, cmd, 0);
         }
