@@ -132,11 +132,11 @@ PersianDate persian_fast_from_fixed(int date)
     PersianDate month_start = {year, month, 1};
     int day = date - fixed_from_persian_fast(month_start) + 1;
 
-    return (PersianDate){
-        .year = year,
-        .month = month,
-        .day = day,
-    };
+    PersianDate result;
+    result.year = year;
+    result.month = month;
+    result.day = day;
+    return result;
 }
 
 bool persian_fast_leap_year(int p_year)

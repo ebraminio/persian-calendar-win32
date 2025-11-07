@@ -8,8 +8,12 @@ Installation
 
 Build
 -----
-In order to build and run this using this in Linux/macOS
 
+* Windows with MSVC
+
+Find and 'Developer Command Prompt for VS 2022' in start menu, cd into the cloned folder and run build-msvc.bat.
+
+* MingW in Linux/macOS
 `bash build.bat && wine persian-calendar.exe`
 
 Same .bat file should be usable in Windows also if `i686-w64-mingw32-gcc` can be found on PATH, download it from https://github.com/niXman/mingw-builds-binaries/ for example.

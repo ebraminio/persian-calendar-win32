@@ -12,6 +12,13 @@
 //     WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), s, (DWORD)lstrlenA(s), &written, NULL);
 // }
 
+extern "C" void* memset(void* s, int c, size_t sz) {
+    char *p = (char *)s;
+    char x = c & 0xFF;
+    while (sz--) *p++ = x;
+    return s;
+}
+
 static HICON create_text_icon(HDC hdc, const wchar_t *text, bool black_background)
 {
     const int size = 128;
@@ -287,10 +294,9 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     case WM_COMMAND:
         if (wparam >= menu_id_start)
         {
-            MENUITEMINFO item = {
-                .cbSize = sizeof(MENUITEMINFO),
-                .fMask = MIIM_ID | MIIM_DATA,
-            };
+            MENUITEMINFO item;
+            item.cbSize = sizeof(MENUITEMINFO);
+            item.fMask = MIIM_ID | MIIM_DATA;
             if (GetMenuItemInfo(hmenu, wparam, FALSE, &item))
             {
                 if (item.wID == local_digits_id)
