@@ -39,7 +39,8 @@ static HICON create_text_icon(HDC hdc, const wchar_t *text, bool black_backgroun
 
     SelectObject(memDC, hbmMask);
 
-    if (!black_background) FillRect(memDC, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
+    if (!black_background)
+        FillRect(memDC, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
 
     SetTextColor(memDC, RGB(0, 0, 0));
     DrawTextW(memDC, text, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
@@ -104,6 +105,8 @@ const wchar_t *months[] = {
 static HMENU hmenu = 0;
 const wchar_t rlm = 0x200F;
 const int menu_id_start = 1000;
+static wchar_t *local_digits_key = const_cast<LPWSTR>(L"LocalDigits");
+static wchar_t *black_background_key = const_cast<LPWSTR>(L"BlackBackground");
 static int local_digits_id = 0;
 static int black_background_id = 0;
 static int exit_id = 0;
@@ -203,6 +206,56 @@ static void update(HWND hwnd, NOTIFYICONDATA *nid)
     Shell_NotifyIcon(NIM_MODIFY, nid);
 }
 
+template <typename Action>
+static int with_registry(Action &&action)
+{
+    const wchar_t *subKey = L"Software\\PersianCalendarWin32";
+    HKEY hKey;
+    LONG status = RegCreateKeyExW(
+        HKEY_CURRENT_USER,
+        subKey,
+        0,
+        NULL,
+        REG_OPTION_NON_VOLATILE,
+        KEY_WRITE | KEY_READ,
+        NULL,
+        &hKey,
+        NULL);
+
+    if (status != ERROR_SUCCESS)
+        return 1;
+
+    action(hKey);
+
+    RegCloseKey(hKey);
+    return 0;
+}
+
+static void store_bool_in_registry(HKEY hKey, LPCWSTR key, bool value)
+{
+    DWORD dword = value;
+    RegSetValueExW(
+        hKey,
+        local_digits_key,
+        0,
+        REG_DWORD,
+        reinterpret_cast<const BYTE *>(&dword),
+        sizeof(DWORD));
+}
+
+static void init_global_variable(HKEY hKey)
+{
+    DWORD value = 0;
+    DWORD size = sizeof(DWORD);
+    DWORD type = 0;
+
+    if (RegQueryValueExW(hKey, local_digits_key, NULL, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
+        local_digits = value;
+
+    if (RegQueryValueExW(hKey, black_background_key, NULL, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
+        black_background = value;
+}
+
 NOTIFYICONDATA nid = {};
 #define ID_TIMER 1
 #define ID_NOTIFY_ICON_CLICK (WM_USER + 1)
@@ -244,11 +297,15 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
                 {
                     local_digits = !local_digits;
                     update(hwnd, &nid);
+                    with_registry([](HKEY hKey)
+                                  { store_bool_in_registry(hKey, local_digits_key, local_digits); });
                 }
                 else if (item.wID == black_background_id)
                 {
                     black_background = !black_background;
                     update(hwnd, &nid);
+                    with_registry([](HKEY hKey)
+                                  { store_bool_in_registry(hKey, black_background_key, black_background); });
                 }
                 else if (item.wID == exit_id)
                     PostQuitMessage(0);
@@ -278,6 +335,8 @@ extern "C" void WinMainCRTStartup()
     if (!hwnd)
         ExitProcess(1);
 
+    with_registry([](HKEY hKey)
+                  { init_global_variable(hKey); });
     nid.cbSize = sizeof(NOTIFYICONDATA);
     nid.hWnd = hwnd;
     nid.uCallbackMessage = ID_NOTIFY_ICON_CLICK;
