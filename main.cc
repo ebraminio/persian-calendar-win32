@@ -7,12 +7,12 @@
 #include <wchar.h>
 #include "persian-calendar.h"
 
-// void log(const char *s) {
+// static void log(const char *s) {
 //     DWORD written;
 //     WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), s, (DWORD)lstrlenA(s), &written, NULL);
 // }
 
-HICON create_text_icon(HDC hdc, const wchar_t *text, bool black_background)
+static HICON create_text_icon(HDC hdc, const wchar_t *text, bool black_background)
 {
     const int size = 128;
     HBITMAP hbmColor = CreateCompatibleBitmap(hdc, size, size);
@@ -79,7 +79,7 @@ static int get_today_fixed()
 
 static bool local_digits = true;
 static bool black_background = true;
-void apply_local_digits(wchar_t *buf)
+static void apply_local_digits(wchar_t *buf)
 {
     if (local_digits)
         for (unsigned i = 0; buf[i]; ++i)
