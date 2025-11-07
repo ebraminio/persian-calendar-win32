@@ -7,7 +7,12 @@
 #include <wchar.h>
 #include "persian-calendar.h"
 
-HICON CreateTextIcon(HDC hdc, const wchar_t *text)
+// void log(const char *s) {
+//     DWORD written;
+//     WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), s, (DWORD)lstrlenA(s), &written, NULL);
+// }
+
+HICON create_text_icon(HDC hdc, const wchar_t *text, bool black_background)
 {
     const int size = 128;
     HBITMAP hbmColor = CreateCompatibleBitmap(hdc, size, size);
@@ -34,7 +39,7 @@ HICON CreateTextIcon(HDC hdc, const wchar_t *text)
 
     SelectObject(memDC, hbmMask);
 
-    FillRect(memDC, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
+    if (!black_background) FillRect(memDC, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
 
     SetTextColor(memDC, RGB(0, 0, 0));
     DrawTextW(memDC, text, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
@@ -57,7 +62,7 @@ HICON CreateTextIcon(HDC hdc, const wchar_t *text)
     return hIcon;
 }
 
-static int getTodayFixed()
+static int get_today_fixed()
 {
     SYSTEMTIME st;
     GetLocalTime(&st);
@@ -73,6 +78,7 @@ static int getTodayFixed()
 }
 
 static bool local_digits = true;
+static bool black_background = true;
 void apply_local_digits(wchar_t *buf)
 {
     if (local_digits)
@@ -98,6 +104,7 @@ const wchar_t *months[] = {
 static HMENU hmenu = 0;
 const int menu_id_start = 1000;
 static int local_digits_id = 0;
+static int black_background_id = 0;
 static int exit_id = 0;
 static void create_menu(PersianDate date)
 {
@@ -145,6 +152,20 @@ static void create_menu(PersianDate date)
         local_digits_id = id;
         ++id;
     }
+    {
+        MENUITEMINFOW item = {};
+        item.cbSize = sizeof(MENUITEMINFO);
+        item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
+        item.fType = 0;
+        item.fState = 0;
+        item.wID = id;
+        item.dwTypeData = L"پیش‌زمینه سیاه آیکون";
+        if (black_background)
+            item.fState |= MFS_CHECKED;
+        InsertMenuItemW(hmenu, id, TRUE, &item);
+        black_background_id = id;
+        ++id;
+    }
     InsertMenu(hmenu, id++, MF_SEPARATOR, TRUE, "");
     ++id;
     {
@@ -165,7 +186,7 @@ static void create_menu(PersianDate date)
 
 static void update(HWND hwnd, NOTIFYICONDATA *nid)
 {
-    PersianDate date = persian_fast_from_fixed(getTodayFixed());
+    PersianDate date = persian_fast_from_fixed(get_today_fixed());
     create_menu(date);
     HDC hdc = GetDC(hwnd);
 
@@ -173,7 +194,7 @@ static void update(HWND hwnd, NOTIFYICONDATA *nid)
     wnsprintfW(day, sizeof(day), L"%d", date.day);
     apply_local_digits(day);
 
-    HICON icon = CreateTextIcon(hdc, day);
+    HICON icon = create_text_icon(hdc, day, black_background);
     ReleaseDC(hwnd, hdc);
     if (nid->hIcon)
         DestroyIcon(nid->hIcon);
@@ -221,6 +242,11 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
                 if (item.wID == local_digits_id)
                 {
                     local_digits = !local_digits;
+                    update(hwnd, &nid);
+                }
+                else if (item.wID == black_background_id)
+                {
+                    black_background = !black_background;
                     update(hwnd, &nid);
                 }
                 else if (item.wID == exit_id)
