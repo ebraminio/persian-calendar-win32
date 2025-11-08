@@ -374,7 +374,7 @@ extern "C" void WinMainCRTStartup()
         DispatchMessage(&msg);
     }
 
-    Shell_NotifyIcon(NIM_DELETE, &nid);
+    Shell_NotifyIconW(NIM_DELETE, &nid);
     DestroyIcon(nid.hIcon);
 
     UnregisterClassW(app, GetModuleHandle(0));
