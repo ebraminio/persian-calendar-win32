@@ -120,7 +120,7 @@ static wchar_t *black_background_key = const_cast<LPWSTR>(L"BlackBackground");
 static int local_digits_id = 0;
 static int black_background_id = 0;
 static int exit_id = 0;
-static void create_menu(PersianDate date)
+static void create_menu(wchar_t *date)
 {
     HMENU prevhmenu = hmenu;
     hmenu = CreatePopupMenu();
@@ -133,19 +133,7 @@ static void create_menu(PersianDate date)
         item.fState = 0;
         item.wID = id;
 
-        wchar_t day[10];
-        wnsprintfW(day, sizeof(day), L"%d", date.day);
-        apply_local_digits(day);
-
-        wchar_t year[10];
-        wnsprintfW(year, sizeof(year), L"%d", date.year);
-        apply_local_digits(year);
-
-        wchar_t buf[255];
-        wnsprintfW(buf, sizeof(buf), L"%lc%ls %ls %ls", rlm,
-                   day, months[date.month - 1], year);
-
-        item.dwTypeData = buf;
+        item.dwTypeData = date;
         item.fState |= MFS_DISABLED;
         InsertMenuItemW(hmenu, id, TRUE, &item);
         ++id;
@@ -198,10 +186,21 @@ static void create_menu(PersianDate date)
         DestroyMenu(prevhmenu);
 }
 
-static void update(HWND hwnd, NOTIFYICONDATA *nid)
+static void update(HWND hwnd, NOTIFYICONDATAW *nid)
 {
     PersianDate date = persian_fast_from_fixed(get_today_fixed());
-    create_menu(date);
+    {
+        wchar_t day[10];
+        wnsprintfW(day, sizeof(day), L"%d", date.day);
+        apply_local_digits(day);
+
+        wchar_t year[10];
+        wnsprintfW(year, sizeof(year), L"%d", date.year);
+        apply_local_digits(year);
+        wnsprintfW(nid->szTip, sizeof(nid->szTip), L"%lc%ls %ls %ls", rlm,
+                    day, months[date.month - 1], year);
+    } 
+    create_menu(nid->szTip);
     HDC hdc = GetDC(hwnd);
 
     wchar_t day[10];
@@ -213,7 +212,7 @@ static void update(HWND hwnd, NOTIFYICONDATA *nid)
     if (nid->hIcon)
         DestroyIcon(nid->hIcon);
     nid->hIcon = icon;
-    Shell_NotifyIcon(NIM_MODIFY, nid);
+    Shell_NotifyIconW(NIM_MODIFY, nid);
 }
 
 template <typename Action>
@@ -266,7 +265,7 @@ static void init_global_variable(HKEY hKey)
         black_background = value;
 }
 
-NOTIFYICONDATA nid = {};
+NOTIFYICONDATAW nid = {};
 #define ID_TIMER 1
 #define ID_NOTIFY_ICON_CLICK (WM_USER + 1)
 LPCWSTR app = const_cast<LPWSTR>(L"Persian Calendar");
@@ -359,12 +358,12 @@ extern "C" void WinMainCRTStartup()
 
     with_registry([](HKEY hKey)
                   { init_global_variable(hKey); });
-    nid.cbSize = sizeof(NOTIFYICONDATA);
+    nid.cbSize = sizeof(NOTIFYICONDATAW);
     nid.hWnd = hwnd;
     nid.uCallbackMessage = ID_NOTIFY_ICON_CLICK;
-    nid.uFlags = NIF_MESSAGE | NIF_ICON;
+    nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
     nid.uID = 0;
-    Shell_NotifyIcon(NIM_ADD, &nid);
+    Shell_NotifyIconW(NIM_ADD, &nid);
     update(hwnd, &nid);
     SetTimer(hwnd, ID_TIMER, 60000, 0);
 
