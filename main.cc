@@ -111,7 +111,7 @@ static void create_menu(wchar_t *date)
     int id = menu_id_start;
     {
         MENUITEMINFOW item = {};
-        item.cbSize = sizeof(MENUITEMINFO);
+        item.cbSize = sizeof(MENUITEMINFOW);
         item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
         item.fType = 0;
         item.fState = 0;
@@ -126,7 +126,7 @@ static void create_menu(wchar_t *date)
     ++id;
     {
         MENUITEMINFOW item = {};
-        item.cbSize = sizeof(MENUITEMINFO);
+        item.cbSize = sizeof(MENUITEMINFOW);
         item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
         item.fType = 0;
         item.fState = 0;
@@ -140,7 +140,7 @@ static void create_menu(wchar_t *date)
     }
     {
         MENUITEMINFOW item = {};
-        item.cbSize = sizeof(MENUITEMINFO);
+        item.cbSize = sizeof(MENUITEMINFOW);
         item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
         item.fType = 0;
         item.fState = 0;
@@ -156,7 +156,7 @@ static void create_menu(wchar_t *date)
     ++id;
     {
         MENUITEMINFOW item = {};
-        item.cbSize = sizeof(MENUITEMINFO);
+        item.cbSize = sizeof(MENUITEMINFOW);
         item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
         item.fType = 0;
         item.fState = 0;
@@ -278,7 +278,7 @@ NOTIFYICONDATAW nid = {};
 #define ID_TIMER 1
 #define ID_NOTIFY_ICON_CLICK (WM_USER + 1)
 LPCWSTR app = const_cast<LPWSTR>(L"Persian Calendar");
-static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg)
     {
@@ -305,10 +305,10 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     case WM_COMMAND:
         if (wparam >= menu_id_start)
         {
-            MENUITEMINFO item;
-            item.cbSize = sizeof(MENUITEMINFO);
+            MENUITEMINFOW item;
+            item.cbSize = sizeof(MENUITEMINFOW);
             item.fMask = MIIM_ID | MIIM_DATA;
-            if (GetMenuItemInfo(hmenu, wparam, FALSE, &item))
+            if (GetMenuItemInfoW(hmenu, wparam, FALSE, &item))
             {
                 if (item.wID == local_digits_id)
                 {
@@ -332,29 +332,16 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-void EnableDpiAwareness()
-{
-    HMODULE hUser32 = LoadLibraryW(L"user32.dll");
-    if (!hUser32)
-        return;
-    typedef BOOL(WINAPI * SetProcessDpiAwarenessContext_t)(DPI_AWARENESS_CONTEXT);
-    auto pSetProcessDpiAwarenessContext =
-        (SetProcessDpiAwarenessContext_t)GetProcAddress(hUser32, "SetProcessDpiAwarenessContext");
-    if (pSetProcessDpiAwarenessContext)
-        pSetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-    FreeLibrary(hUser32);
-}
-
 #ifdef _WIN64
-extern "C" void _WinMainCRTStartup()
+extern "C" void _start()
 #else
-extern "C" void WinMainCRTStartup()
+extern "C" void start()
 #endif
 {
     WNDCLASSEXW wc = {};
-    wc.cbSize = sizeof(WNDCLASSEX);
+    wc.cbSize = sizeof(WNDCLASSEXW);
     wc.hInstance = GetModuleHandle(0);
-    wc.lpfnWndProc = WndProc;
+    wc.lpfnWndProc = window_procedure;
     wc.lpszClassName = app;
     if (!RegisterClassExW(&wc))
         ExitProcess(1);
@@ -362,7 +349,19 @@ extern "C" void WinMainCRTStartup()
     HWND hwnd = CreateWindowExW(0, app, 0, 0, 0, 0, 0, 0, 0, 0, GetModuleHandle(0), 0);
     if (!hwnd)
         ExitProcess(1);
-    EnableDpiAwareness();
+
+    {
+        HMODULE hUser32 = LoadLibraryW(L"user32.dll");
+        if (hUser32)
+        {
+            typedef BOOL(WINAPI * SetProcessDpiAwarenessContext_t)(DPI_AWARENESS_CONTEXT);
+            auto pSetProcessDpiAwarenessContext =
+                (SetProcessDpiAwarenessContext_t)GetProcAddress(hUser32, "SetProcessDpiAwarenessContext");
+            if (pSetProcessDpiAwarenessContext)
+                pSetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+            FreeLibrary(hUser32);
+        }
+    }
 
     Registry().init_global_variables();
     nid.cbSize = sizeof(NOTIFYICONDATAW);
