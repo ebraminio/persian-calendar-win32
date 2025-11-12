@@ -101,8 +101,6 @@ const wchar_t *months[] = {
 static HMENU hmenu = 0;
 const wchar_t rlm = 0x200F;
 const int menu_id_start = 1000;
-static wchar_t *local_digits_key = const_cast<LPWSTR>(L"LocalDigits");
-static wchar_t *black_background_key = const_cast<LPWSTR>(L"BlackBackground");
 static int local_digits_id = 0;
 static int black_background_id = 0;
 static int exit_id = 0;
@@ -174,11 +172,12 @@ static void create_menu(wchar_t *date)
 
 static void update(HWND hwnd, NOTIFYICONDATAW *nid)
 {
-    SYSTEMTIME st;
-    GetLocalTime(&st);
-
     uint32_t py, pm, pd;
-    gregorian_to_persian(st.wYear, st.wMonth, st.wDay, &py, &pm, &pd);
+    {
+        SYSTEMTIME st;
+        GetLocalTime(&st);
+        gregorian_to_persian(st.wYear, st.wMonth, st.wDay, &py, &pm, &pd);
+    }
 
     wchar_t day[10];
     wnsprintfW(day, sizeof(day), L"%d", pd);
@@ -203,55 +202,77 @@ static void update(HWND hwnd, NOTIFYICONDATAW *nid)
     Shell_NotifyIconW(NIM_MODIFY, nid);
 }
 
-template <typename Action>
-static int with_registry(Action &&action)
+class Registry
 {
-    const wchar_t *subKey = L"Software\\PersianCalendarWin32";
+public:
+    Registry()
+    {
+        const wchar_t *subKey = L"Software\\PersianCalendarWin32";
+        LONG status = RegCreateKeyExW(
+            HKEY_CURRENT_USER,
+            subKey,
+            0,
+            NULL,
+            REG_OPTION_NON_VOLATILE,
+            KEY_WRITE | KEY_READ,
+            NULL,
+            &hKey,
+            NULL);
+        if (status != ERROR_SUCCESS)
+            hKey = NULL;
+    }
+
+    void init_global_variables()
+    {
+        if (!hKey)
+            return;
+        DWORD value = 0;
+        DWORD size = sizeof(DWORD);
+        DWORD type = 0;
+
+        if (RegQueryValueExW(hKey, local_digits_key, NULL, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
+            local_digits = value;
+
+        if (RegQueryValueExW(hKey, black_background_key, NULL, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
+            black_background = value;
+    }
+
+    void set_local_digits(bool value)
+    {
+        set_bool(local_digits_key, value);
+    }
+
+    void set_black_background(bool value)
+    {
+        set_bool(black_background_key, value);
+    }
+
+    ~Registry()
+    {
+        if (hKey)
+            RegCloseKey(hKey);
+    }
+
+private:
     HKEY hKey;
-    LONG status = RegCreateKeyExW(
-        HKEY_CURRENT_USER,
-        subKey,
-        0,
-        NULL,
-        REG_OPTION_NON_VOLATILE,
-        KEY_WRITE | KEY_READ,
-        NULL,
-        &hKey,
-        NULL);
 
-    if (status != ERROR_SUCCESS)
-        return 1;
+    void set_bool(LPCWSTR key, bool value)
+    {
+        if (!hKey)
+            return;
+        DWORD dword = value ? 1 : 0;
+        RegSetValueExW(
+            hKey,
+            key,
+            0,
+            REG_DWORD,
+            reinterpret_cast<const BYTE *>(&dword),
+            sizeof(DWORD));
+    }
 
-    action(hKey);
-
-    RegCloseKey(hKey);
-    return 0;
-}
-
-static void store_bool_in_registry(HKEY hKey, LPCWSTR key, bool value)
-{
-    DWORD dword = value;
-    RegSetValueExW(
-        hKey,
-        key,
-        0,
-        REG_DWORD,
-        reinterpret_cast<const BYTE *>(&dword),
-        sizeof(DWORD));
-}
-
-static void init_global_variable(HKEY hKey)
-{
-    DWORD value = 0;
-    DWORD size = sizeof(DWORD);
-    DWORD type = 0;
-
-    if (RegQueryValueExW(hKey, local_digits_key, NULL, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
-        local_digits = value;
-
-    if (RegQueryValueExW(hKey, black_background_key, NULL, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
-        black_background = value;
-}
+    constexpr static wchar_t *local_digits_key = const_cast<LPWSTR>(L"LocalDigits");
+    constexpr static wchar_t *black_background_key = const_cast<LPWSTR>(L"BlackBackground");
+};
 
 NOTIFYICONDATAW nid = {};
 #define ID_TIMER 1
@@ -293,15 +314,13 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
                 {
                     local_digits = !local_digits;
                     update(hwnd, &nid);
-                    with_registry([](HKEY hKey)
-                                  { store_bool_in_registry(hKey, local_digits_key, local_digits); });
+                    Registry().set_local_digits(local_digits);
                 }
                 else if (item.wID == black_background_id)
                 {
                     black_background = !black_background;
                     update(hwnd, &nid);
-                    with_registry([](HKEY hKey)
-                                  { store_bool_in_registry(hKey, black_background_key, black_background); });
+                    Registry().set_black_background(black_background);
                 }
                 else if (item.wID == exit_id)
                     PostQuitMessage(0);
@@ -345,8 +364,7 @@ extern "C" void WinMainCRTStartup()
         ExitProcess(1);
     EnableDpiAwareness();
 
-    with_registry([](HKEY hKey)
-                  { init_global_variable(hKey); });
+    Registry().init_global_variables();
     nid.cbSize = sizeof(NOTIFYICONDATAW);
     nid.hWnd = hwnd;
     nid.uCallbackMessage = ID_NOTIFY_ICON_CLICK;
