@@ -6,6 +6,7 @@
 #include <shlwapi.h>
 #include <wchar.h>
 #include <shellscalingapi.h>
+#include <stdint.h>
 #include "persian-calendar.h"
 
 // static void log(const char *s) {
@@ -71,21 +72,6 @@ static HICON create_text_icon(HDC hdc, const wchar_t *text, bool black_backgroun
     DeleteObject(hbmColor);
     DeleteObject(hbmMask);
     return hIcon;
-}
-
-static int get_today_fixed()
-{
-    SYSTEMTIME st;
-    GetLocalTime(&st);
-    int y = st.wYear;
-    int m = st.wMonth;
-    int d = st.wDay;
-    if (m < 3)
-    {
-        y--;
-        m += 12;
-    }
-    return 365 * y + y / 4 - y / 100 + y / 400 + (153 * (m - 3) + 2) / 5 + d - 1 - 305;
 }
 
 static bool local_digits = true;
@@ -188,25 +174,27 @@ static void create_menu(wchar_t *date)
 
 static void update(HWND hwnd, NOTIFYICONDATAW *nid)
 {
-    PersianDate date = persian_fast_from_fixed(get_today_fixed());
-    {
-        wchar_t day[10];
-        wnsprintfW(day, sizeof(day), L"%d", date.day);
-        apply_local_digits(day);
+    SYSTEMTIME st;
+    GetLocalTime(&st);
 
-        wchar_t year[10];
-        wnsprintfW(year, sizeof(year), L"%d", date.year);
-        apply_local_digits(year);
-        wnsprintfW(nid->szTip, sizeof(nid->szTip), L"%lc%ls %ls %ls", rlm,
-                    day, months[date.month - 1], year);
-    } 
-    create_menu(nid->szTip);
-    HDC hdc = GetDC(hwnd);
+    uint32_t py, pm, pd;
+    gregorian_to_persian(st.wYear, st.wMonth, st.wDay, &py, &pm, &pd);
 
     wchar_t day[10];
-    wnsprintfW(day, sizeof(day), L"%d", date.day);
+    wnsprintfW(day, sizeof(day), L"%d", pd);
     apply_local_digits(day);
 
+    wchar_t year[10];
+    wnsprintfW(year, sizeof(year), L"%d", py);
+    apply_local_digits(year);
+
+    wnsprintfW(nid->szTip, sizeof(nid->szTip), L"%lc%ls %ls %ls", rlm,
+               day, months[pm - 1], year);
+
+    // szTip allocated string is both used for the tooltip and first item of the menu
+    create_menu(nid->szTip);
+
+    HDC hdc = GetDC(hwnd);
     HICON icon = create_text_icon(hdc, day, black_background);
     ReleaseDC(hwnd, hdc);
     if (nid->hIcon)
@@ -328,7 +316,8 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
 void EnableDpiAwareness()
 {
     HMODULE hUser32 = LoadLibraryW(L"user32.dll");
-    if (!hUser32) return;
+    if (!hUser32)
+        return;
     typedef BOOL(WINAPI * SetProcessDpiAwarenessContext_t)(DPI_AWARENESS_CONTEXT);
     auto pSetProcessDpiAwarenessContext =
         (SetProcessDpiAwarenessContext_t)GetProcAddress(hUser32, "SetProcessDpiAwarenessContext");
