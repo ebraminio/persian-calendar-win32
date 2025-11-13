@@ -202,9 +202,8 @@ static void update(HWND hwnd, NOTIFYICONDATAW *nid)
     Shell_NotifyIconW(NIM_MODIFY, nid);
 }
 
-class Registry
+struct Registry
 {
-public:
     Registry()
     {
         const wchar_t *subKey = L"Software\\PersianCalendarWin32";
@@ -332,11 +331,7 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
     return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-#ifdef _WIN64
 extern "C" void _start()
-#else
-extern "C" void start()
-#endif
 {
     WNDCLASSEXW wc = {};
     wc.cbSize = sizeof(WNDCLASSEXW);
