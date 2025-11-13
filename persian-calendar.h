@@ -12,7 +12,7 @@ License: GNU/LGPL _ Open Source & Free :: Version: 2.80 : [2020=1399]
 1461=(365*4)+(4/4) & 146097=(365*400)+(400/4)-(400/100)+(400/400)  */
 
 #include <stdint.h>
-inline void persian_from_jdn(uint32_t jdn, uint32_t *py, uint32_t *pm, uint32_t *pd) {
+inline void jdn_to_persian(uint32_t jdn, uint32_t *py, uint32_t *pm, uint32_t *pd) {
   uint32_t year = jdn / 12053 * 33 - 1595;
   jdn %= 12053;
   year += jdn / 1461 * 4;

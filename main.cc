@@ -1,6 +1,4 @@
 #define WIN32_LEAN_AND_MEAN
-#define VC_EXTRALEAN
-
 #include <windows.h>
 #include <shellapi.h>
 #include <shlwapi.h>
@@ -97,8 +95,7 @@ const wchar_t *months[] = {
     L"اسفند",
 };
 
-static HMENU hmenu = 0;
-const wchar_t rlm = 0x200F;
+static HMENU menu = 0;
 const int menu_id_start = 1000;
 static int local_digits_id = 0;
 static int black_background_id = 0;
@@ -106,50 +103,44 @@ static int exit_id = 0;
 MENUITEMINFOW item = {};
 static void create_menu(wchar_t *date)
 {
-    HMENU prevhmenu = hmenu;
-    hmenu = CreatePopupMenu();
+    HMENU old_menu = menu;
+    menu = CreatePopupMenu();
     int id = menu_id_start;
     {
         item.cbSize = sizeof(MENUITEMINFOW);
         item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
         item.fType = 0;
-        item.fState = 0;
+        item.fState = MFS_DISABLED;
         item.wID = id;
-
         item.dwTypeData = date;
-        item.fState |= MFS_DISABLED;
-        InsertMenuItemW(hmenu, id, TRUE, &item);
-        ++id;
+        InsertMenuItemW(menu, id, TRUE, &item);
     }
-    InsertMenuW(hmenu, id++, MF_SEPARATOR, TRUE, const_cast<LPWSTR>(L""));
+    ++id;
+    InsertMenuW(menu, id++, MF_SEPARATOR, TRUE, const_cast<LPWSTR>(L""));
     ++id;
     {
         item.cbSize = sizeof(MENUITEMINFOW);
         item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
         item.fType = 0;
-        item.fState = 0;
+        item.fState = local_digits ? MFS_CHECKED : 0;
         item.wID = id;
         item.dwTypeData = const_cast<LPWSTR>(L"اعداد فارسی");
-        if (local_digits)
-            item.fState |= MFS_CHECKED;
-        InsertMenuItemW(hmenu, id, TRUE, &item);
+        InsertMenuItemW(menu, id, TRUE, &item);
         local_digits_id = id;
-        ++id;
     }
+    ++id;
     {
         item.cbSize = sizeof(MENUITEMINFOW);
         item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
         item.fType = 0;
-        item.fState = 0;
+        item.fState = black_background ? MFS_CHECKED : 0;
         item.wID = id;
         item.dwTypeData = const_cast<LPWSTR>(L"پیش‌زمینهٔ سیاه آیکون");
-        if (black_background)
-            item.fState |= MFS_CHECKED;
-        InsertMenuItemW(hmenu, id, TRUE, &item);
+        InsertMenuItemW(menu, id, TRUE, &item);
         black_background_id = id;
-        ++id;
     }
-    InsertMenuW(hmenu, id++, MF_SEPARATOR, TRUE, const_cast<LPWSTR>(L""));
+    ++id;
+    InsertMenuW(menu, id++, MF_SEPARATOR, TRUE, const_cast<LPWSTR>(L""));
     ++id;
     {
         item.cbSize = sizeof(MENUITEMINFOW);
@@ -158,15 +149,15 @@ static void create_menu(wchar_t *date)
         item.fState = 0;
         item.wID = id;
         item.dwTypeData = const_cast<LPWSTR>(L"خروج");
-        InsertMenuItemW(hmenu, id, TRUE, &item);
+        InsertMenuItemW(menu, id, TRUE, &item);
         exit_id = id;
-        ++id;
     }
-    if (prevhmenu)
-        DestroyMenu(prevhmenu);
+    ++id;
+    if (old_menu)
+        DestroyMenu(old_menu);
 }
 
-static uint32_t get_today_jdn()
+static uint32_t today_jdn()
 {
     SYSTEMTIME st;
     GetLocalTime(&st);
@@ -181,10 +172,11 @@ static uint32_t get_today_jdn()
     return 356032 + 365 * gy + gy / 4 - gy / 100 + gy / 400 + (153 * (gm - 3) + 2) / 5 + gd - 1 - 305;
 }
 
-static void update(HWND hwnd, NOTIFYICONDATAW *nid)
+const wchar_t rlm = 0x200F;
+static void update(HWND hwnd, NOTIFYICONDATAW *notify_icon_data)
 {
     uint32_t py, pm, pd;
-    persian_from_jdn(get_today_jdn(), &py, &pm, &pd);
+    jdn_to_persian(today_jdn(), &py, &pm, &pd);
 
     wchar_t day[10];
     wnsprintfW(day, sizeof(day), L"%d", pd);
@@ -194,19 +186,19 @@ static void update(HWND hwnd, NOTIFYICONDATAW *nid)
     wnsprintfW(year, sizeof(year), L"%d", py);
     apply_local_digits(year);
 
-    wnsprintfW(nid->szTip, sizeof(nid->szTip), L"%lc%ls %ls %ls", rlm,
+    wnsprintfW(notify_icon_data->szTip, sizeof(notify_icon_data->szTip), L"%lc%ls %ls %ls", rlm,
                day, months[pm - 1], year);
 
     // szTip allocated string is both used for the tooltip and first item of the menu
-    create_menu(nid->szTip);
+    create_menu(notify_icon_data->szTip);
 
     HDC hdc = GetDC(hwnd);
     HICON icon = create_text_icon(hdc, day, black_background);
     ReleaseDC(hwnd, hdc);
-    if (nid->hIcon)
-        DestroyIcon(nid->hIcon);
-    nid->hIcon = icon;
-    Shell_NotifyIconW(NIM_MODIFY, nid);
+    if (notify_icon_data->hIcon)
+        DestroyIcon(notify_icon_data->hIcon);
+    notify_icon_data->hIcon = icon;
+    Shell_NotifyIconW(NIM_MODIFY, notify_icon_data);
 }
 
 #define appId L"PersianCalendarWin32"
@@ -214,33 +206,32 @@ struct Registry
 {
     Registry()
     {
-        const wchar_t *subKey = L"Software\\" appId;
         LONG status = RegCreateKeyExW(
             HKEY_CURRENT_USER,
-            subKey,
+            L"Software\\" appId,
             0,
             NULL,
             REG_OPTION_NON_VOLATILE,
             KEY_WRITE | KEY_READ,
             NULL,
-            &hKey,
+            &key,
             NULL);
         if (status != ERROR_SUCCESS)
-            hKey = NULL;
+            key = NULL;
     }
 
     void init_global_variables() const
     {
-        if (!hKey)
+        if (!key)
             return;
         DWORD value = 0;
         DWORD size = sizeof(DWORD);
         DWORD type = 0;
 
-        if (RegQueryValueExW(hKey, local_digits_key, NULL, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
+        if (RegQueryValueExW(key, local_digits_key, NULL, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
             local_digits = value;
 
-        if (RegQueryValueExW(hKey, black_background_key, NULL, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
+        if (RegQueryValueExW(key, black_background_key, NULL, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
             black_background = value;
     }
 
@@ -256,21 +247,21 @@ struct Registry
 
     ~Registry()
     {
-        if (hKey)
-            RegCloseKey(hKey);
+        if (key)
+            RegCloseKey(key);
     }
 
 private:
-    HKEY hKey;
+    HKEY key;
 
-    void set_bool(LPCWSTR key, bool value) const
+    void set_bool(LPCWSTR name, bool value) const
     {
-        if (!hKey)
+        if (!key)
             return;
         DWORD dword = value ? 1 : 0;
         RegSetValueExW(
-            hKey,
             key,
+            name,
             0,
             REG_DWORD,
             reinterpret_cast<const BYTE *>(&dword),
@@ -281,7 +272,7 @@ private:
     constexpr static wchar_t *black_background_key = const_cast<LPWSTR>(L"BlackBackground");
 };
 
-NOTIFYICONDATAW nid = {};
+NOTIFYICONDATAW notify_icon_data = {};
 #define ID_TIMER 1
 #define ID_NOTIFY_ICON_CLICK (WM_USER + 1)
 static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -295,7 +286,7 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
         PostQuitMessage(0);
         return 0;
     case WM_TIMER:
-        update(hwnd, &nid);
+        update(hwnd, &notify_icon_data);
         break;
     case ID_NOTIFY_ICON_CLICK:
         if (lparam == WM_LBUTTONUP || lparam == WM_RBUTTONUP)
@@ -303,9 +294,9 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
             POINT p;
             GetCursorPos(&p);
             SetForegroundWindow(hwnd);
-            WORD cmd = TrackPopupMenuEx(hmenu, TPM_RIGHTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_LAYOUTRTL,
+            WORD cmd = TrackPopupMenuEx(menu, TPM_RIGHTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_LAYOUTRTL,
                                         p.x, p.y, hwnd, 0);
-            SendMessage(hwnd, WM_COMMAND, cmd, 0);
+            SendMessageW(hwnd, WM_COMMAND, cmd, 0);
         }
         break;
     case WM_COMMAND:
@@ -314,18 +305,18 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
             MENUITEMINFOW item;
             item.cbSize = sizeof(MENUITEMINFOW);
             item.fMask = MIIM_ID | MIIM_DATA;
-            if (GetMenuItemInfoW(hmenu, wparam, FALSE, &item))
+            if (GetMenuItemInfoW(menu, wparam, FALSE, &item))
             {
                 if (item.wID == local_digits_id)
                 {
                     local_digits = !local_digits;
-                    update(hwnd, &nid);
+                    update(hwnd, &notify_icon_data);
                     Registry().set_local_digits(local_digits);
                 }
                 else if (item.wID == black_background_id)
                 {
                     black_background = !black_background;
-                    update(hwnd, &nid);
+                    update(hwnd, &notify_icon_data);
                     Registry().set_black_background(black_background);
                 }
                 else if (item.wID == exit_id)
@@ -335,7 +326,7 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
         }
         break;
     }
-    return DefWindowProc(hwnd, msg, wparam, lparam);
+    return DefWindowProcW(hwnd, msg, wparam, lparam);
 }
 
 WNDCLASSEXW wc = {};
@@ -346,13 +337,13 @@ extern "C" void _start()
         return;
 
     wc.cbSize = sizeof(WNDCLASSEXW);
-    wc.hInstance = GetModuleHandle(0);
+    wc.hInstance = GetModuleHandleW(0);
     wc.lpfnWndProc = window_procedure;
     wc.lpszClassName = appId;
     if (!RegisterClassExW(&wc))
         ExitProcess(1);
 
-    HWND hwnd = CreateWindowExW(0, appId, 0, 0, 0, 0, 0, 0, 0, 0, GetModuleHandle(0), 0);
+    HWND hwnd = CreateWindowExW(0, appId, 0, 0, 0, 0, 0, 0, 0, 0, GetModuleHandleW(0), 0);
     if (!hwnd)
         ExitProcess(1);
 
@@ -371,7 +362,7 @@ extern "C" void _start()
         HMODULE uxtheme = LoadLibraryW(L"uxtheme.dll");
         if (uxtheme)
         {
-            typedef int(WINAPI * func_t)(int); // SetPreferredAppMode's signature, is in 135 of uxtheme
+            typedef INT(WINAPI * func_t)(INT); // SetPreferredAppMode's signature, is in 135 of uxtheme
             auto pSetPreferredAppMode = (func_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
             if (pSetPreferredAppMode)
                 pSetPreferredAppMode(/*Allow dark*/ 1);
@@ -380,24 +371,24 @@ extern "C" void _start()
     }
 
     Registry().init_global_variables();
-    nid.cbSize = sizeof(NOTIFYICONDATAW);
-    nid.hWnd = hwnd;
-    nid.uCallbackMessage = ID_NOTIFY_ICON_CLICK;
-    nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
-    nid.uID = 0;
-    Shell_NotifyIconW(NIM_ADD, &nid);
-    update(hwnd, &nid);
+    notify_icon_data.cbSize = sizeof(NOTIFYICONDATAW);
+    notify_icon_data.hWnd = hwnd;
+    notify_icon_data.uCallbackMessage = ID_NOTIFY_ICON_CLICK;
+    notify_icon_data.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
+    notify_icon_data.uID = 0;
+    Shell_NotifyIconW(NIM_ADD, &notify_icon_data);
+    update(hwnd, &notify_icon_data);
     SetTimer(hwnd, ID_TIMER, 60000, 0);
 
     MSG msg;
-    while (GetMessage(&msg, 0, 0, 0) > 0)
+    while (GetMessageW(&msg, 0, 0, 0) > 0)
     {
         TranslateMessage(&msg);
-        DispatchMessage(&msg);
+        DispatchMessageW(&msg);
     }
 
-    Shell_NotifyIconW(NIM_DELETE, &nid);
-    DestroyIcon(nid.hIcon);
+    Shell_NotifyIconW(NIM_DELETE, &notify_icon_data);
+    DestroyIcon(notify_icon_data.hIcon);
 
     UnregisterClassW(appId, GetModuleHandle(0));
     ExitProcess(0);
