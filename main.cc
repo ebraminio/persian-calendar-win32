@@ -101,6 +101,9 @@ static int local_digits_id = 0;
 static int black_background_id = 0;
 static int exit_id = 0;
 MENUITEMINFOW item = {};
+LPWSTR local_digits_label = L"اعداد فارسی";
+LPWSTR black_background_label = L"پیش‌زمینهٔ سیاه آیکون";
+LPWSTR exit_label = L"خروج";
 static void create_menu(wchar_t *date)
 {
     HMENU old_menu = menu;
@@ -116,7 +119,7 @@ static void create_menu(wchar_t *date)
         InsertMenuItemW(menu, id, TRUE, &item);
     }
     ++id;
-    InsertMenuW(menu, id++, MF_SEPARATOR, TRUE, const_cast<LPWSTR>(L""));
+    InsertMenuW(menu, id++, MF_SEPARATOR, TRUE, NULL);
     ++id;
     {
         item.cbSize = sizeof(MENUITEMINFOW);
@@ -124,7 +127,7 @@ static void create_menu(wchar_t *date)
         item.fType = 0;
         item.fState = local_digits ? MFS_CHECKED : 0;
         item.wID = id;
-        item.dwTypeData = const_cast<LPWSTR>(L"اعداد فارسی");
+        item.dwTypeData = local_digits_label;
         InsertMenuItemW(menu, id, TRUE, &item);
         local_digits_id = id;
     }
@@ -135,12 +138,12 @@ static void create_menu(wchar_t *date)
         item.fType = 0;
         item.fState = black_background ? MFS_CHECKED : 0;
         item.wID = id;
-        item.dwTypeData = const_cast<LPWSTR>(L"پیش‌زمینهٔ سیاه آیکون");
+        item.dwTypeData = black_background_label;
         InsertMenuItemW(menu, id, TRUE, &item);
         black_background_id = id;
     }
     ++id;
-    InsertMenuW(menu, id++, MF_SEPARATOR, TRUE, const_cast<LPWSTR>(L""));
+    InsertMenuW(menu, id++, MF_SEPARATOR, TRUE, NULL);
     ++id;
     {
         item.cbSize = sizeof(MENUITEMINFOW);
@@ -148,7 +151,7 @@ static void create_menu(wchar_t *date)
         item.fType = 0;
         item.fState = 0;
         item.wID = id;
-        item.dwTypeData = const_cast<LPWSTR>(L"خروج");
+        item.dwTypeData = exit_label;
         InsertMenuItemW(menu, id, TRUE, &item);
         exit_id = id;
     }
@@ -268,8 +271,8 @@ private:
             sizeof(DWORD));
     }
 
-    constexpr static wchar_t *local_digits_key = const_cast<LPWSTR>(L"LocalDigits");
-    constexpr static wchar_t *black_background_key = const_cast<LPWSTR>(L"BlackBackground");
+    LPWSTR local_digits_key = L"LocalDigits";
+    LPWSTR black_background_key = L"BlackBackground";
 };
 
 NOTIFYICONDATAW notify_icon_data = {};
@@ -330,9 +333,10 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
 }
 
 WNDCLASSEXW wc = {};
+LPCWSTR mutex_key = appId;
 extern "C" void _start()
 {
-    HANDLE hMutex = CreateMutexW(0, 0, const_cast<LPWSTR>(appId));
+    HANDLE hMutex = CreateMutexW(0, 0, mutex_key);
     if (!hMutex || GetLastError() == ERROR_ALREADY_EXISTS)
         return;
 
