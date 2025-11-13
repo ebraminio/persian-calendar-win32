@@ -1,5 +1,5 @@
 // Modified from https://github.com/SCR-IR/jalaliDate-Cpp/blob/e3f5989/src/converter.cpp
-// Have a look at the source for more reliable implementation as the implementation
+// Have a look at the source for more reliable implementation as that
 // is changed here for better or worse.
 
 /**  Gregorian & Jalali (Hijri_Shamsi,Solar) Date Converter Functions
@@ -12,30 +12,21 @@ License: GNU/LGPL _ Open Source & Free :: Version: 2.80 : [2020=1399]
 1461=(365*4)+(4/4) & 146097=(365*400)+(400/4)-(400/100)+(400/400)  */
 
 #include <stdint.h>
-inline void gregorian_to_persian(
-  uint32_t gy, uint32_t gm, uint32_t gd,
-  uint32_t *py, uint32_t *pm, uint32_t *pd
-) {
-  uint32_t days;
-  {
-    uint32_t gy2 = (gm > 2) ? gy + 1 : gy;
-    static const uint32_t g_d_m[] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
-    days = 355666 + 365 * gy + (gy2 + 3) / 4 - (gy2 + 99) / 100 + (gy2 + 399) / 400 + gd + g_d_m[gm - 1];
-  }
-  uint32_t year = days / 12053 * 33 - 1595;
-  days %= 12053;
-  year += days / 1461 * 4;
-  days %= 1461;
-  if (days > 365) {
-    year += (days - 1) / 365;
-    days = (days - 1) % 365;
+inline void persian_from_jdn(uint32_t jdn, uint32_t *py, uint32_t *pm, uint32_t *pd) {
+  uint32_t year = jdn / 12053 * 33 - 1595;
+  jdn %= 12053;
+  year += jdn / 1461 * 4;
+  jdn %= 1461;
+  if (jdn > 365) {
+    year += (jdn - 1) / 365;
+    jdn = (jdn - 1) % 365;
   }
   *py = year;
-  if (days < 186) {
-    *pm = 1 + days / 31;
-    *pd = 1 + days % 31;
+  if (jdn < 186) {
+    *pm = 1 + jdn / 31;
+    *pd = 1 + jdn % 31;
   } else {
-    *pm = 7 + (days - 186) / 30;
-    *pd = 1 + (days - 186) % 30;
+    *pm = 7 + (jdn - 186) / 30;
+    *pd = 1 + (jdn - 186) % 30;
   }
 }

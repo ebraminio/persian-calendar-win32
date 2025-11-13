@@ -166,14 +166,25 @@ static void create_menu(wchar_t *date)
         DestroyMenu(prevhmenu);
 }
 
+static uint32_t get_today_jdn()
+{
+    SYSTEMTIME st;
+    GetLocalTime(&st);
+    uint32_t gy = st.wYear;
+    uint32_t gm = st.wMonth;
+    uint32_t gd = st.wDay;
+    if (gy < 3)
+    {
+        gy--;
+        gm += 12;
+    }
+    return 356032 + 365 * gy + gy / 4 - gy / 100 + gy / 400 + (153 * (gm - 3) + 2) / 5 + gd - 1 - 305;
+}
+
 static void update(HWND hwnd, NOTIFYICONDATAW *nid)
 {
     uint32_t py, pm, pd;
-    {
-        SYSTEMTIME st;
-        GetLocalTime(&st);
-        gregorian_to_persian(st.wYear, st.wMonth, st.wDay, &py, &pm, &pd);
-    }
+    persian_from_jdn(get_today_jdn(), &py, &pm, &pd);
 
     wchar_t day[10];
     wnsprintfW(day, sizeof(day), L"%d", pd);
@@ -360,9 +371,10 @@ extern "C" void _start()
         HMODULE uxtheme = LoadLibraryW(L"uxtheme.dll");
         if (uxtheme)
         {
-            typedef int (WINAPI* func_t)(int); // SetPreferredAppMode's signature, is in 135 of uxtheme
+            typedef int(WINAPI * func_t)(int); // SetPreferredAppMode's signature, is in 135 of uxtheme
             auto pSetPreferredAppMode = (func_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
-            if (pSetPreferredAppMode) pSetPreferredAppMode(/*Allow dark*/1);
+            if (pSetPreferredAppMode)
+                pSetPreferredAppMode(/*Allow dark*/ 1);
             FreeLibrary(uxtheme);
         }
     }
