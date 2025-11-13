@@ -103,13 +103,13 @@ const int menu_id_start = 1000;
 static int local_digits_id = 0;
 static int black_background_id = 0;
 static int exit_id = 0;
+MENUITEMINFOW item = {};
 static void create_menu(wchar_t *date)
 {
     HMENU prevhmenu = hmenu;
     hmenu = CreatePopupMenu();
     int id = menu_id_start;
     {
-        MENUITEMINFOW item = {};
         item.cbSize = sizeof(MENUITEMINFOW);
         item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
         item.fType = 0;
@@ -124,7 +124,6 @@ static void create_menu(wchar_t *date)
     InsertMenuW(hmenu, id++, MF_SEPARATOR, TRUE, const_cast<LPWSTR>(L""));
     ++id;
     {
-        MENUITEMINFOW item = {};
         item.cbSize = sizeof(MENUITEMINFOW);
         item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
         item.fType = 0;
@@ -138,7 +137,6 @@ static void create_menu(wchar_t *date)
         ++id;
     }
     {
-        MENUITEMINFOW item = {};
         item.cbSize = sizeof(MENUITEMINFOW);
         item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
         item.fType = 0;
@@ -154,7 +152,6 @@ static void create_menu(wchar_t *date)
     InsertMenuW(hmenu, id++, MF_SEPARATOR, TRUE, const_cast<LPWSTR>(L""));
     ++id;
     {
-        MENUITEMINFOW item = {};
         item.cbSize = sizeof(MENUITEMINFOW);
         item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
         item.fType = 0;
