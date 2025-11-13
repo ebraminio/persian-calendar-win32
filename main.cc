@@ -80,21 +80,6 @@ static void apply_local_digits(wchar_t *buf)
             buf[i] += L'۰' - L'0';
 }
 
-const wchar_t *months[] = {
-    L"فروردین",
-    L"اردیبهشت",
-    L"خرداد",
-    L"تیر",
-    L"مرداد",
-    L"شهریور",
-    L"مهر",
-    L"آبان",
-    L"آذر",
-    L"دی",
-    L"بهمن",
-    L"اسفند",
-};
-
 static HMENU menu = 0;
 const int menu_id_start = 1000;
 static int local_digits_id = 0;
@@ -176,9 +161,33 @@ static uint32_t today_jdn()
 }
 
 const wchar_t rlm = 0x200F;
+const wchar_t *months[] = {
+    L"فروردین",
+    L"اردیبهشت",
+    L"خرداد",
+    L"تیر",
+    L"مرداد",
+    L"شهریور",
+    L"مهر",
+    L"آبان",
+    L"آذر",
+    L"دی",
+    L"بهمن",
+    L"اسفند",
+};
+const wchar_t *weekdays[] = {
+    L"شنبه",
+    L"یکشنبه",
+    L"دوشنبه",
+    L"سه‌شنبه",
+    L"چهارشنبه",
+    L"پنجشنبه",
+    L"جمعه",
+};
 static void update(HWND hwnd, NOTIFYICONDATAW *notify_icon_data)
 {
     uint32_t py, pm, pd;
+    uint32_t jdn = today_jdn();
     jdn_to_persian(today_jdn(), &py, &pm, &pd);
 
     wchar_t day[10];
@@ -189,8 +198,8 @@ static void update(HWND hwnd, NOTIFYICONDATAW *notify_icon_data)
     wnsprintfW(year, sizeof(year), L"%d", py);
     apply_local_digits(year);
 
-    wnsprintfW(notify_icon_data->szTip, sizeof(notify_icon_data->szTip), L"%lc%ls %ls %ls", rlm,
-               day, months[pm - 1], year);
+    wnsprintfW(notify_icon_data->szTip, sizeof(notify_icon_data->szTip), L"%ls، %ls %ls %ls",
+               weekdays[(jdn + 3) % 7], day, months[pm - 1], year);
 
     // szTip allocated string is both used for the tooltip and first item of the menu
     create_menu(notify_icon_data->szTip);
@@ -366,7 +375,7 @@ extern "C" void _start()
         if (uxtheme)
         {
             typedef INT(WINAPI * func_t)(INT); // SetPreferredAppMode's signature, is in 135 of uxtheme
-            auto pSetPreferredAppMode = (func_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
+            func_t pSetPreferredAppMode = (func_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
             if (pSetPreferredAppMode)
                 pSetPreferredAppMode(/*Allow dark*/ 1);
             FreeLibrary(uxtheme);
