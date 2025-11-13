@@ -77,7 +77,7 @@ static void apply_local_digits(wchar_t *buf)
 {
     if (local_digits)
         for (unsigned i = 0; buf[i]; ++i)
-            buf[i] = buf[i] - L'0' + L'۰';
+            buf[i] += L'۰' - L'0';
 }
 
 const wchar_t *months[] = {
