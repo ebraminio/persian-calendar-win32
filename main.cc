@@ -292,8 +292,8 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
             POINT p;
             GetCursorPos(&p);
             SetForegroundWindow(hwnd);
-            WORD cmd = TrackPopupMenu(hmenu, TPM_RIGHTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_NONOTIFY | TPM_LAYOUTRTL,
-                                      p.x, p.y, 0, hwnd, 0);
+            WORD cmd = TrackPopupMenuEx(hmenu, TPM_RIGHTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_LAYOUTRTL,
+                                        p.x, p.y, hwnd, 0);
             SendMessage(hwnd, WM_COMMAND, cmd, 0);
         }
         break;
@@ -346,15 +346,24 @@ extern "C" void _start()
         ExitProcess(1);
 
     {
-        HMODULE hUser32 = LoadLibraryW(L"user32.dll");
-        if (hUser32)
+        HMODULE user32 = LoadLibraryW(L"user32.dll");
+        if (user32)
         {
             typedef BOOL(WINAPI * func_t)(DPI_AWARENESS_CONTEXT);
-            func_t pSetProcessDpiAwarenessContext =
-                reinterpret_cast<func_t>(GetProcAddress(hUser32, "SetProcessDpiAwarenessContext"));
+            func_t pSetProcessDpiAwarenessContext = (func_t)GetProcAddress(user32, "SetProcessDpiAwarenessContext");
             if (pSetProcessDpiAwarenessContext)
                 pSetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-            FreeLibrary(hUser32);
+            FreeLibrary(user32);
+        }
+    }
+    {
+        HMODULE uxtheme = LoadLibraryW(L"uxtheme.dll");
+        if (uxtheme)
+        {
+            typedef int (WINAPI* func_t)(int); // SetPreferredAppMode's signature, is in 135 of uxtheme
+            auto pSetPreferredAppMode = (func_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
+            if (pSetPreferredAppMode) pSetPreferredAppMode(/*Allow dark*/1);
+            FreeLibrary(uxtheme);
         }
     }
 
