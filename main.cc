@@ -365,9 +365,8 @@ extern "C" void _start()
         if (user32)
         {
             typedef BOOL(WINAPI * func_t)(DPI_AWARENESS_CONTEXT);
-            func_t pSetProcessDpiAwarenessContext = (func_t)GetProcAddress(user32, "SetProcessDpiAwarenessContext");
-            if (pSetProcessDpiAwarenessContext)
-                pSetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+            func_t func = (func_t)GetProcAddress(user32, "SetProcessDpiAwarenessContext");
+            if (func) func(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
             FreeLibrary(user32);
         }
     }
@@ -376,9 +375,8 @@ extern "C" void _start()
         if (uxtheme)
         {
             typedef INT(WINAPI * func_t)(INT); // SetPreferredAppMode's signature, is in 135 of uxtheme
-            func_t pSetPreferredAppMode = (func_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
-            if (pSetPreferredAppMode)
-                pSetPreferredAppMode(/*Allow dark*/ 1);
+            func_t func = (func_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
+            if (func) func(/*Allow dark*/ 1);
             FreeLibrary(uxtheme);
         }
     }
