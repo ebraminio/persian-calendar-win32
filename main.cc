@@ -333,22 +333,21 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
 }
 
 WNDCLASSEXW wc = {};
-LPCWSTR mutex_key = appId;
 extern "C" void _start()
 {
-    HANDLE hMutex = CreateMutexW(0, 0, mutex_key);
-    if (!hMutex || GetLastError() == ERROR_ALREADY_EXISTS)
-        return;
+    {
+        LPCWSTR mutex_key = appId;
+        HANDLE hMutex = CreateMutexW(0, 0, mutex_key);
+        if (!hMutex || GetLastError() == ERROR_ALREADY_EXISTS)
+            return;
+    }
+    HMODULE module = GetModuleHandleW(0);
 
     wc.cbSize = sizeof(WNDCLASSEXW);
-    wc.hInstance = GetModuleHandleW(0);
+    wc.hInstance = module;
     wc.lpfnWndProc = window_procedure;
     wc.lpszClassName = appId;
     if (!RegisterClassExW(&wc))
-        ExitProcess(1);
-
-    HWND hwnd = CreateWindowExW(0, appId, 0, 0, 0, 0, 0, 0, 0, 0, GetModuleHandleW(0), 0);
-    if (!hwnd)
         ExitProcess(1);
 
     {
@@ -374,6 +373,10 @@ extern "C" void _start()
         }
     }
 
+    HWND hwnd = CreateWindowExW(0, appId, 0, 0, 0, 0, 0, 0, 0, 0, module, 0);
+    if (!hwnd)
+        ExitProcess(1);
+
     Registry().init_global_variables();
     notify_icon_data.cbSize = sizeof(NOTIFYICONDATAW);
     notify_icon_data.hWnd = hwnd;
@@ -394,6 +397,6 @@ extern "C" void _start()
     Shell_NotifyIconW(NIM_DELETE, &notify_icon_data);
     DestroyIcon(notify_icon_data.hIcon);
 
-    UnregisterClassW(appId, GetModuleHandle(0));
+    UnregisterClassW(appId, module);
     ExitProcess(0);
 }
