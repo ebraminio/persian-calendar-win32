@@ -16,6 +16,7 @@
 #pragma comment(lib, "shlwapi.lib")
 #pragma comment(lib, "advapi32.lib")
 
+// A logger with CRT that works with wine also, so let's have it around
 // static void log(const char *s) {
 //     DWORD written;
 //     WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), s, (DWORD)lstrlenA(s), &written, NULL);
@@ -228,7 +229,7 @@ struct Registry
             hKey = NULL;
     }
 
-    void init_global_variables()
+    void init_global_variables() const
     {
         if (!hKey)
             return;
@@ -243,12 +244,12 @@ struct Registry
             black_background = value;
     }
 
-    void set_local_digits(bool value)
+    void set_local_digits(bool value) const
     {
         set_bool(local_digits_key, value);
     }
 
-    void set_black_background(bool value)
+    void set_black_background(bool value) const
     {
         set_bool(black_background_key, value);
     }
@@ -262,7 +263,7 @@ struct Registry
 private:
     HKEY hKey;
 
-    void set_bool(LPCWSTR key, bool value)
+    void set_bool(LPCWSTR key, bool value) const
     {
         if (!hKey)
             return;
@@ -356,9 +357,9 @@ extern "C" void _start()
         HMODULE hUser32 = LoadLibraryW(L"user32.dll");
         if (hUser32)
         {
-            typedef BOOL(WINAPI * SetProcessDpiAwarenessContext_t)(DPI_AWARENESS_CONTEXT);
-            auto pSetProcessDpiAwarenessContext =
-                (SetProcessDpiAwarenessContext_t)GetProcAddress(hUser32, "SetProcessDpiAwarenessContext");
+            typedef BOOL(WINAPI * func_t)(DPI_AWARENESS_CONTEXT);
+            func_t pSetProcessDpiAwarenessContext =
+                reinterpret_cast<func_t>(GetProcAddress(hUser32, "SetProcessDpiAwarenessContext"));
             if (pSetProcessDpiAwarenessContext)
                 pSetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
             FreeLibrary(hUser32);
