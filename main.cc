@@ -9,6 +9,13 @@
 #include <stdint.h>
 #include "persian-calendar.h"
 
+#pragma comment(lib, "kernel32.lib")
+#pragma comment(lib, "user32.lib")
+#pragma comment(lib, "shell32.lib")
+#pragma comment(lib, "gdi32.lib")
+#pragma comment(lib, "shlwapi.lib")
+#pragma comment(lib, "advapi32.lib")
+
 // static void log(const char *s) {
 //     DWORD written;
 //     WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), s, (DWORD)lstrlenA(s), &written, NULL);
