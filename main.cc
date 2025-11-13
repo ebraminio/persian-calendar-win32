@@ -22,15 +22,6 @@
 //     WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), s, (DWORD)lstrlenA(s), &written, NULL);
 // }
 
-extern "C" void *memset(void *s, int c, size_t sz)
-{
-    char *p = (char *)s;
-    char x = c & 0xFF;
-    while (sz--)
-        *p++ = x;
-    return s;
-}
-
 static HICON create_text_icon(HDC hdc, const wchar_t *text, bool black_background)
 {
     const int size = 128;
@@ -339,9 +330,9 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
     return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
+WNDCLASSEXW wc = {};
 extern "C" void _start()
 {
-    WNDCLASSEXW wc = {};
     wc.cbSize = sizeof(WNDCLASSEXW);
     wc.hInstance = GetModuleHandle(0);
     wc.lpfnWndProc = window_procedure;
