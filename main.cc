@@ -359,6 +359,10 @@ extern "C" void _start()
     if (!RegisterClassExW(&wc))
         ExitProcess(1);
 
+    HWND hwnd = CreateWindowExW(0, appId, 0, 0, 0, 0, 0, 0, 0, 0, module, 0);
+    if (!hwnd)
+        ExitProcess(1);
+
     {
         HMODULE user32 = LoadLibraryW(L"user32.dll");
         if (user32)
@@ -381,10 +385,6 @@ extern "C" void _start()
             FreeLibrary(uxtheme);
         }
     }
-
-    HWND hwnd = CreateWindowExW(0, appId, 0, 0, 0, 0, 0, 0, 0, 0, module, 0);
-    if (!hwnd)
-        ExitProcess(1);
 
     Registry().init_global_variables();
     notify_icon_data.cbSize = sizeof(NOTIFYICONDATAW);
