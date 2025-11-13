@@ -292,7 +292,7 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
             POINT p;
             GetCursorPos(&p);
             SetForegroundWindow(hwnd);
-            WORD cmd = TrackPopupMenu(hmenu, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_NONOTIFY | TPM_LAYOUTRTL,
+            WORD cmd = TrackPopupMenu(hmenu, TPM_RIGHTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_NONOTIFY | TPM_LAYOUTRTL,
                                       p.x, p.y, 0, hwnd, 0);
             SendMessage(hwnd, WM_COMMAND, cmd, 0);
         }
