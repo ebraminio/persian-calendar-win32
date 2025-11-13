@@ -188,7 +188,7 @@ static void update(HWND hwnd, NOTIFYICONDATAW *notify_icon_data)
 {
     uint32_t py, pm, pd;
     uint32_t jdn = today_jdn();
-    jdn_to_persian(today_jdn(), &py, &pm, &pd);
+    jdn_to_persian(jdn, &py, &pm, &pd);
 
     wchar_t day[10];
     wnsprintfW(day, sizeof(day), L"%d", pd);
