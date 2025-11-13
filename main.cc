@@ -86,9 +86,6 @@ static int local_digits_id = 0;
 static int black_background_id = 0;
 static int exit_id = 0;
 MENUITEMINFOW item = {};
-LPWSTR local_digits_label = L"اعداد فارسی";
-LPWSTR black_background_label = L"پیش‌زمینهٔ سیاه آیکون";
-LPWSTR exit_label = L"خروج";
 static void create_menu(wchar_t *date)
 {
     HMENU old_menu = menu;
@@ -112,7 +109,7 @@ static void create_menu(wchar_t *date)
         item.fType = 0;
         item.fState = local_digits ? MFS_CHECKED : 0;
         item.wID = id;
-        item.dwTypeData = local_digits_label;
+        item.dwTypeData = const_cast<wchar_t *>(L"اعداد فارسی");
         InsertMenuItemW(menu, id, TRUE, &item);
         local_digits_id = id;
     }
@@ -123,7 +120,7 @@ static void create_menu(wchar_t *date)
         item.fType = 0;
         item.fState = black_background ? MFS_CHECKED : 0;
         item.wID = id;
-        item.dwTypeData = black_background_label;
+        item.dwTypeData = const_cast<wchar_t *>(L"پیش‌زمینهٔ سیاه آیکون");
         InsertMenuItemW(menu, id, TRUE, &item);
         black_background_id = id;
     }
@@ -136,7 +133,7 @@ static void create_menu(wchar_t *date)
         item.fType = 0;
         item.fState = 0;
         item.wID = id;
-        item.dwTypeData = exit_label;
+        item.dwTypeData = const_cast<wchar_t *>(L"خروج");
         InsertMenuItemW(menu, id, TRUE, &item);
         exit_id = id;
     }
@@ -280,8 +277,8 @@ private:
             sizeof(DWORD));
     }
 
-    LPWSTR local_digits_key = L"LocalDigits";
-    LPWSTR black_background_key = L"BlackBackground";
+    constexpr static wchar_t *local_digits_key = const_cast<wchar_t *>(L"LocalDigits");
+    constexpr static wchar_t *black_background_key = const_cast<wchar_t *>(L"BlackBackground");
 };
 
 NOTIFYICONDATAW notify_icon_data = {};
