@@ -1,4 +1,7 @@
-// Slightly modified from https://github.com/SCR-IR/jalaliDate-Cpp/blob/e3f5989/src/converter.cpp
+// Modified from https://github.com/SCR-IR/jalaliDate-Cpp/blob/e3f5989/src/converter.cpp
+// Have a look at the source for more reliable implementation as the implementation
+// is changed here for better or worse.
+
 /**  Gregorian & Jalali (Hijri_Shamsi,Solar) Date Converter Functions
 Author: JDF.SCR.IR =>> Download Full Version :  http://jdf.scr.ir/jdf
 License: GNU/LGPL _ Open Source & Free :: Version: 2.80 : [2020=1399]
@@ -16,12 +19,12 @@ inline void gregorian_to_persian(
   uint32_t days;
   {
     uint32_t gy2 = (gm > 2) ? gy + 1 : gy;
-    static uint32_t g_d_m[12] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
+    static const uint32_t g_d_m[] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
     days = 355666 + 365 * gy + (gy2 + 3) / 4 - (gy2 + 99) / 100 + (gy2 + 399) / 400 + gd + g_d_m[gm - 1];
   }
-  uint32_t year = -1595 + 33 * (days / 12053);
+  uint32_t year = days / 12053 * 33 - 1595;
   days %= 12053;
-  year += 4 * days / 1461;
+  year += days / 1461 * 4;
   days %= 1461;
   if (days > 365) {
     year += (days - 1) / 365;
