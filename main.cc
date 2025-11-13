@@ -198,11 +198,12 @@ static void update(HWND hwnd, NOTIFYICONDATAW *nid)
     Shell_NotifyIconW(NIM_MODIFY, nid);
 }
 
+#define appId L"PersianCalendarWin32"
 struct Registry
 {
     Registry()
     {
-        const wchar_t *subKey = L"Software\\PersianCalendarWin32";
+        const wchar_t *subKey = L"Software\\" appId;
         LONG status = RegCreateKeyExW(
             HKEY_CURRENT_USER,
             subKey,
@@ -272,7 +273,6 @@ private:
 NOTIFYICONDATAW nid = {};
 #define ID_TIMER 1
 #define ID_NOTIFY_ICON_CLICK (WM_USER + 1)
-LPCWSTR app = const_cast<LPWSTR>(L"Persian Calendar");
 static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg)
@@ -330,14 +330,18 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
 WNDCLASSEXW wc = {};
 extern "C" void _start()
 {
+    HANDLE hMutex = CreateMutexW(0, 0, const_cast<LPWSTR>(appId));
+    if (!hMutex || GetLastError() == ERROR_ALREADY_EXISTS)
+        return;
+
     wc.cbSize = sizeof(WNDCLASSEXW);
     wc.hInstance = GetModuleHandle(0);
     wc.lpfnWndProc = window_procedure;
-    wc.lpszClassName = app;
+    wc.lpszClassName = appId;
     if (!RegisterClassExW(&wc))
         ExitProcess(1);
 
-    HWND hwnd = CreateWindowExW(0, app, 0, 0, 0, 0, 0, 0, 0, 0, GetModuleHandle(0), 0);
+    HWND hwnd = CreateWindowExW(0, appId, 0, 0, 0, 0, 0, 0, 0, 0, GetModuleHandle(0), 0);
     if (!hwnd)
         ExitProcess(1);
 
@@ -374,6 +378,6 @@ extern "C" void _start()
     Shell_NotifyIconW(NIM_DELETE, &nid);
     DestroyIcon(nid.hIcon);
 
-    UnregisterClassW(app, GetModuleHandle(0));
+    UnregisterClassW(appId, GetModuleHandle(0));
     ExitProcess(0);
 }
