@@ -9,11 +9,10 @@ jobs:
   upload-exe:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Install mingw
-        run: sudo apt install mingw-w64
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1
       - name: Build EXE
-        run: bash build.sh
+        run: build.bat
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
