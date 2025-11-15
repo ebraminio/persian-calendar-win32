@@ -345,12 +345,9 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
 WNDCLASSEXW wc = {};
 extern "C" void _start()
 {
-    {
-        wchar_t *mutex_key = appId;
-        HANDLE hMutex = CreateMutexW(0, 0, mutex_key);
-        if (!hMutex || GetLastError() == ERROR_ALREADY_EXISTS)
-            return;
-    }
+    HANDLE mutex = CreateMutexW(0, 0, const_cast<wchar_t *>(appId));
+    if (!mutex || GetLastError() == ERROR_ALREADY_EXISTS)
+        return;
     HMODULE module = GetModuleHandleW(0);
 
     wc.cbSize = sizeof(WNDCLASSEXW);
