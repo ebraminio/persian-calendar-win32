@@ -267,7 +267,7 @@ struct Registry
 private:
     HKEY key;
 
-    void set_bool(LPCWSTR name, bool value) const
+    void set_bool(wchar_t *name, bool value) const
     {
         if (!key)
             return;
@@ -346,7 +346,7 @@ WNDCLASSEXW wc = {};
 extern "C" void _start()
 {
     {
-        LPCWSTR mutex_key = appId;
+        wchar_t *mutex_key = appId;
         HANDLE hMutex = CreateMutexW(0, 0, mutex_key);
         if (!hMutex || GetLastError() == ERROR_ALREADY_EXISTS)
             return;
