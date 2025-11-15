@@ -109,8 +109,7 @@ static void create_menu(wchar_t *date)
         item.fType = 0;
         item.fState = local_digits ? MFS_CHECKED : 0;
         item.wID = id;
-        wchar_t *label = L"اعداد فارسی";
-        item.dwTypeData = label;
+        item.dwTypeData = const_cast<wchar_t *>(L"اعداد فارسی");
         InsertMenuItemW(menu, id, TRUE, &item);
         local_digits_id = id;
     }
@@ -121,8 +120,7 @@ static void create_menu(wchar_t *date)
         item.fType = 0;
         item.fState = black_background ? MFS_CHECKED : 0;
         item.wID = id;
-        wchar_t *label = L"پیش‌زمینهٔ سیاه آیکون";
-        item.dwTypeData = label;
+        item.dwTypeData = const_cast<wchar_t *>(L"پیش‌زمینهٔ سیاه آیکون");
         InsertMenuItemW(menu, id, TRUE, &item);
         black_background_id = id;
     }
@@ -135,8 +133,7 @@ static void create_menu(wchar_t *date)
         item.fType = 0;
         item.fState = 0;
         item.wID = id;
-        wchar_t *label = L"خروج";
-        item.dwTypeData = label;
+        item.dwTypeData = const_cast<wchar_t *>(L"خروج");
         InsertMenuItemW(menu, id, TRUE, &item);
         exit_id = id;
     }
@@ -270,7 +267,7 @@ struct Registry
 private:
     HKEY key;
 
-    void set_bool(wchar_t *name, bool value) const
+    void set_bool(LPCWSTR name, bool value) const
     {
         if (!key)
             return;
@@ -284,8 +281,8 @@ private:
             sizeof(DWORD));
     }
 
-    wchar_t *local_digits_key = L"LocalDigits";
-    wchar_t *black_background_key = L"BlackBackground";
+    constexpr static wchar_t *local_digits_key = const_cast<wchar_t *>(L"LocalDigits");
+    constexpr static wchar_t *black_background_key = const_cast<wchar_t *>(L"BlackBackground");
 };
 
 NOTIFYICONDATAW notify_icon_data = {};
@@ -349,7 +346,7 @@ WNDCLASSEXW wc = {};
 extern "C" void _start()
 {
     {
-        wchar_t *mutex_key = appId;
+        LPCWSTR mutex_key = appId;
         HANDLE hMutex = CreateMutexW(0, 0, mutex_key);
         if (!hMutex || GetLastError() == ERROR_ALREADY_EXISTS)
             return;
