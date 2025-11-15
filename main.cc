@@ -191,12 +191,16 @@ static void update(HWND hwnd, NOTIFYICONDATAW *notify_icon_data)
     wnsprintfW(day, sizeof(day), L"%d", pd);
     apply_local_digits(day);
 
+    wchar_t month[10];
+    wnsprintfW(month, sizeof(month), L"%d", pm);
+    apply_local_digits(month);
+
     wchar_t year[10];
     wnsprintfW(year, sizeof(year), L"%d", py);
     apply_local_digits(year);
 
-    wnsprintfW(notify_icon_data->szTip, sizeof(notify_icon_data->szTip), L"%ls، %ls %ls %ls",
-               weekdays[(jdn + 3) % 7], day, months[pm - 1], year);
+    wnsprintfW(notify_icon_data->szTip, sizeof(notify_icon_data->szTip), L"%ls، %ls %ls/%ls %ls",
+               weekdays[(jdn + 3) % 7], day, months[pm - 1], month, year);
 
     // szTip allocated string is both used for the tooltip and first item of the menu
     create_menu(notify_icon_data->szTip);
