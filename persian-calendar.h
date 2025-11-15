@@ -12,7 +12,8 @@ License: GNU/LGPL _ Open Source & Free :: Version: 2.80 : [2020=1399]
 1461=(365*4)+(4/4) & 146097=(365*400)+(400/4)-(400/100)+(400/400)  */
 
 #include <stdint.h>
-inline void jdn_to_persian(uint32_t jdn, uint32_t *py, uint32_t *pm, uint32_t *pd) {
+typedef struct { uint32_t year; uint32_t month; uint32_t day_of_month; } persian_date_t;
+inline persian_date_t jdn_to_persian(uint32_t jdn) {
   uint32_t year = jdn / 12053 * 33 - 1595;
   jdn %= 12053;
   year += jdn / 1461 * 4;
@@ -21,12 +22,15 @@ inline void jdn_to_persian(uint32_t jdn, uint32_t *py, uint32_t *pm, uint32_t *p
     year += (jdn - 1) / 365;
     jdn = (jdn - 1) % 365;
   }
-  *py = year;
+
+  persian_date_t result;
+  result.year = year;
   if (jdn < 186) {
-    *pm = 1 + jdn / 31;
-    *pd = 1 + jdn % 31;
+    result.month = 1 + jdn / 31;
+    result.day_of_month = 1 + jdn % 31;
   } else {
-    *pm = 7 + (jdn - 186) / 30;
-    *pd = 1 + (jdn - 186) % 30;
+    result.month = 7 + (jdn - 186) / 30;
+    result.day_of_month = 1 + (jdn - 186) % 30;
   }
+  return result;
 }

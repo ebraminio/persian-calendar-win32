@@ -183,25 +183,24 @@ const wchar_t *weekdays[] = {
 };
 static void update(HWND hwnd, NOTIFYICONDATAW *notify_icon_data)
 {
-    uint32_t py, pm, pd;
     uint32_t jdn = today_jdn();
-    jdn_to_persian(jdn, &py, &pm, &pd);
+    persian_date_t date = jdn_to_persian(jdn);
 
     wchar_t day[10];
-    wnsprintfW(day, sizeof(day), L"%d", pd);
+    wnsprintfW(day, sizeof(day), L"%d", date.day_of_month);
     apply_local_digits(day);
 
     wchar_t month[10];
-    wnsprintfW(month, sizeof(month), L"%d", pm);
+    wnsprintfW(month, sizeof(month), L"%d", date.month);
     apply_local_digits(month);
 
     wchar_t year[10];
-    wnsprintfW(year, sizeof(year), L"%d", py);
+    wnsprintfW(year, sizeof(year), L"%d", date.month);
     apply_local_digits(year);
 
     wnsprintfW(notify_icon_data->szTip, sizeof(notify_icon_data->szTip),
                L"%ls، %ls %ls/%ls %ls",
-               weekdays[(jdn + 3) % 7], day, months[pm - 1], month, year);
+               weekdays[(jdn + 3) % 7], day, months[date.month - 1], month, year);
 
     // szTip allocated string is both used for the tooltip and first item of the menu
     create_menu(notify_icon_data->szTip);
@@ -371,7 +370,8 @@ extern "C" void _start()
         {
             typedef BOOL(WINAPI * func_t)(DPI_AWARENESS_CONTEXT);
             func_t func = (func_t)GetProcAddress(user32, "SetProcessDpiAwarenessContext");
-            if (func) func(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+            if (func)
+                func(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
             FreeLibrary(user32);
         }
     }
@@ -381,7 +381,8 @@ extern "C" void _start()
         {
             typedef INT(WINAPI * func_t)(INT); // SetPreferredAppMode's signature, is in 135 of uxtheme
             func_t func = (func_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
-            if (func) func(/*Allow dark*/ 1);
+            if (func)
+                func(/*Allow dark*/ 1);
             FreeLibrary(uxtheme);
         }
     }
