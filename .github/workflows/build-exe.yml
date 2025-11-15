@@ -7,11 +7,12 @@ on: [push, workflow_dispatch]
 
 jobs:
   upload-exe:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ilammy/msvc-dev-cmd@v1
-      - name: Build EXE
+      - name: Build EXE\
+        shell: cmd
         run: build.bat
       - name: Upload EXE
         uses: actions/upload-artifact@v4
