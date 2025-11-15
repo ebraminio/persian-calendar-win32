@@ -198,7 +198,7 @@ static void update(HWND hwnd, NOTIFYICONDATAW *notify_icon_data)
     apply_local_digits(month);
 
     wchar_t year[10];
-    wnsprintfW(year, sizeof(year), L"%d", date.month);
+    wnsprintfW(year, sizeof(year), L"%d", date.year);
     apply_local_digits(year);
 
     wnsprintfW(notify_icon_data->szTip, sizeof(notify_icon_data->szTip),
