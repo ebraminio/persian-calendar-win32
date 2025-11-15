@@ -81,16 +81,16 @@ static void apply_local_digits(wchar_t *buf)
 }
 
 static HMENU menu = 0;
-const int menu_id_start = 1000;
-static int local_digits_id = 0;
-static int black_background_id = 0;
-static int exit_id = 0;
-MENUITEMINFOW item = {};
-static void create_menu(wchar_t *date)
+const unsigned menu_id_start = 1000;
+static unsigned local_digits_id = 0;
+static unsigned black_background_id = 0;
+static unsigned exit_id = 0;
+inline void create_menu(wchar_t *date)
 {
+    MENUITEMINFOW item = {};
     HMENU old_menu = menu;
     menu = CreatePopupMenu();
-    int id = menu_id_start;
+    unsigned id = menu_id_start;
     {
         item.cbSize = sizeof(MENUITEMINFOW);
         item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
@@ -142,14 +142,13 @@ static void create_menu(wchar_t *date)
         DestroyMenu(old_menu);
 }
 
-static uint32_t today_jdn()
+inline uint32_t today_jdn()
 {
     SYSTEMTIME st;
     GetLocalTime(&st);
     return gregorian_to_jdn(st.wYear, st.wMonth, st.wDay);
 }
 
-const wchar_t rlm = 0x200F;
 const wchar_t *months[] = {
     L"فروردین",
     L"اردیبهشت",
@@ -173,7 +172,7 @@ const wchar_t *weekdays[] = {
     L"پنجشنبه",
     L"جمعه",
 };
-static void update(HWND hwnd, NOTIFYICONDATAW *notify_icon_data)
+void update(HWND hwnd, NOTIFYICONDATAW *notify_icon_data)
 {
     uint32_t jdn = today_jdn();
     persian_date_t date = jdn_to_persian(jdn);
@@ -234,10 +233,10 @@ struct Registry
         DWORD type = 0;
 
         if (RegQueryValueExW(key, local_digits_key, NULL, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
-            local_digits = value;
+            local_digits = !!value;
 
         if (RegQueryValueExW(key, black_background_key, NULL, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
-            black_background = value;
+            black_background = !!value;
     }
 
     void set_local_digits(bool value) const
@@ -299,9 +298,9 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
             POINT p;
             GetCursorPos(&p);
             SetForegroundWindow(hwnd);
-            WORD cmd = TrackPopupMenuEx(menu, TPM_RIGHTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_LAYOUTRTL,
+            BOOL cmd = TrackPopupMenuEx(menu, TPM_RIGHTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_LAYOUTRTL,
                                         p.x, p.y, hwnd, 0);
-            SendMessageW(hwnd, WM_COMMAND, cmd, 0);
+            SendMessageW(hwnd, WM_COMMAND, (WPARAM)cmd, 0);
         }
         break;
     case WM_COMMAND:

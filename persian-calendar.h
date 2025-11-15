@@ -13,7 +13,7 @@ License: GNU/LGPL _ Open Source & Free :: Version: 2.80 : [2020=1399]
 
 #include <stdint.h>
 
-static uint32_t gregorian_to_jdn(uint32_t gy, uint32_t gm, uint32_t gd)
+inline uint32_t gregorian_to_jdn(uint32_t gy, uint32_t gm, uint32_t gd)
 {
   uint32_t gy2 = (gm > 2) ? gy + 1 : gy;
   static const uint32_t g_d_m[12] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
