@@ -6,7 +6,6 @@
 #include <shellscalingapi.h>
 #include <stdint.h>
 #include "persian-calendar.h"
-#include "gregorian-calendar.h"
 
 #pragma comment(lib, "kernel32.lib")
 #pragma comment(lib, "user32.lib")
@@ -180,7 +179,7 @@ static void update(HWND hwnd, NOTIFYICONDATAW *notify_icon_data)
     persian_date_t date = jdn_to_persian(jdn);
 
     wchar_t day[10];
-    wnsprintfW(day, sizeof(day), L"%d", date.day_of_month);
+    wnsprintfW(day, sizeof(day), L"%d", date.day);
     apply_local_digits(day);
 
     wchar_t month[10];

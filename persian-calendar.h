@@ -12,7 +12,15 @@ License: GNU/LGPL _ Open Source & Free :: Version: 2.80 : [2020=1399]
 1461=(365*4)+(4/4) & 146097=(365*400)+(400/4)-(400/100)+(400/400)  */
 
 #include <stdint.h>
-typedef struct { uint32_t year; uint32_t month; uint32_t day_of_month; } persian_date_t;
+
+static uint32_t gregorian_to_jdn(uint32_t gy, uint32_t gm, uint32_t gd)
+{
+  uint32_t gy2 = (gm > 2) ? gy + 1 : gy;
+  static const uint32_t g_d_m[12] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
+  return 355666 + (365 * gy) + (gy2 + 3) / 4 - (gy2 + 99) / 100 + (gy2 + 399) / 400 + gd + g_d_m[gm - 1];
+}
+
+typedef struct { uint32_t year; uint32_t month; uint32_t day; } persian_date_t;
 inline persian_date_t jdn_to_persian(uint32_t jdn) {
   uint32_t year = jdn / 12053 * 33 - 1595;
   jdn %= 12053;
@@ -27,10 +35,10 @@ inline persian_date_t jdn_to_persian(uint32_t jdn) {
   result.year = year;
   if (jdn < 186) {
     result.month = 1 + jdn / 31;
-    result.day_of_month = 1 + jdn % 31;
+    result.day = 1 + jdn % 31;
   } else {
     result.month = 7 + (jdn - 186) / 30;
-    result.day_of_month = 1 + (jdn - 186) % 30;
+    result.day = 1 + (jdn - 186) % 30;
   }
   return result;
 }
