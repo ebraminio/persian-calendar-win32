@@ -3,7 +3,7 @@ name: Build EXE
 permissions:
   contents: read
 
-on: [push]
+on: [push, workflow_dispatch]
 
 jobs:
   upload-exe:
