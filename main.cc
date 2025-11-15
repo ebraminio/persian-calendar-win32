@@ -6,6 +6,7 @@
 #include <shellscalingapi.h>
 #include <stdint.h>
 #include "persian-calendar.h"
+#include "gregorian-calendar.h"
 
 #pragma comment(lib, "kernel32.lib")
 #pragma comment(lib, "user32.lib")
@@ -146,15 +147,7 @@ static uint32_t today_jdn()
 {
     SYSTEMTIME st;
     GetLocalTime(&st);
-    uint32_t gy = st.wYear;
-    uint32_t gm = st.wMonth;
-    uint32_t gd = st.wDay;
-    if (gy < 3)
-    {
-        gy--;
-        gm += 12;
-    }
-    return 356032 + 365 * gy + gy / 4 - gy / 100 + gy / 400 + (153 * (gm - 3) + 2) / 5 + gd - 1 - 305;
+    return gregorian_to_jdn(st.wYear, st.wMonth, st.wDay);
 }
 
 const wchar_t rlm = 0x200F;
