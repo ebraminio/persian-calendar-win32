@@ -15,6 +15,7 @@ int main()
     }
 
     char line[MAX_LINE_LENGTH];
+    bool had_error = false;
     while (fgets(line, sizeof(line), file))
     {
         uint32_t gy, gm, gd, py, pm, pd;
@@ -25,14 +26,12 @@ int main()
             if (persian_date.year != py || persian_date.month != pm || persian_date.day != pd)
             {
                 printf("Error in %s", line);
+                had_error = true;
             }
         }
-        else
-        {
-            fprintf(stderr, "Invalid line format: %s", line);
-        }
+        else fprintf(stderr, "Invalid line format: %s", line);
     }
 
     fclose(file);
-    return EXIT_SUCCESS;
+    return had_error ? EXIT_FAILURE : EXIT_SUCCESS;
 }
