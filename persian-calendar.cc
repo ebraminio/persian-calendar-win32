@@ -76,9 +76,9 @@ const unsigned menu_id_start = 1000;
 static unsigned local_digits_id = 0;
 static unsigned black_background_id = 0;
 static unsigned exit_id = 0;
-MENUITEMINFOW menu_item = {};
 static void create_menu(wchar_t *date)
 {
+    static MENUITEMINFOW menu_item = {};
     HMENU old_menu = menu;
     menu = CreatePopupMenu();
     unsigned id = menu_id_start;
@@ -297,24 +297,24 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
     case WM_COMMAND:
         if (wparam >= menu_id_start)
         {
-            MENUITEMINFOW item;
-            item.cbSize = sizeof(MENUITEMINFOW);
-            item.fMask = MIIM_ID | MIIM_DATA;
-            if (GetMenuItemInfoW(menu, wparam, FALSE, &item))
+            static MENUITEMINFOW menu_item = {};
+            menu_item.cbSize = sizeof(MENUITEMINFOW);
+            menu_item.fMask = MIIM_ID | MIIM_DATA;
+            if (GetMenuItemInfoW(menu, wparam, FALSE, &menu_item))
             {
-                if (item.wID == local_digits_id)
+                if (menu_item.wID == local_digits_id)
                 {
                     local_digits = !local_digits;
                     update(hwnd, &notify_icon_data);
                     Registry().set_local_digits(local_digits);
                 }
-                else if (item.wID == black_background_id)
+                else if (menu_item.wID == black_background_id)
                 {
                     black_background = !black_background;
                     update(hwnd, &notify_icon_data);
                     Registry().set_black_background(black_background);
                 }
-                else if (item.wID == exit_id)
+                else if (menu_item.wID == exit_id)
                     PostQuitMessage(0);
             }
             return 0;
@@ -324,7 +324,6 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
     return DefWindowProcW(hwnd, msg, wparam, lparam);
 }
 
-WNDCLASSEXW wc = {};
 extern "C" void _start()
 {
     HANDLE mutex = CreateMutexW(0, 0, const_cast<wchar_t *>(appId));
@@ -332,6 +331,7 @@ extern "C" void _start()
         return;
     HMODULE module = GetModuleHandleW(0);
 
+    static WNDCLASSEXW wc = {};
     wc.cbSize = sizeof(WNDCLASSEXW);
     wc.hInstance = module;
     wc.lpfnWndProc = window_procedure;
