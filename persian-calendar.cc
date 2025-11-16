@@ -87,11 +87,11 @@ static unsigned black_background_id = 0;
 static unsigned exit_id = 0;
 inline void create_menu(wchar_t *date)
 {
-    MENUITEMINFOW item = {};
     HMENU old_menu = menu;
     menu = CreatePopupMenu();
     unsigned id = menu_id_start;
     {
+        MENUITEMINFOW item = {};
         item.cbSize = sizeof(MENUITEMINFOW);
         item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
         item.fType = 0;
@@ -104,6 +104,7 @@ inline void create_menu(wchar_t *date)
     InsertMenuW(menu, id++, MF_SEPARATOR, TRUE, NULL);
     ++id;
     {
+        MENUITEMINFOW item = {};
         item.cbSize = sizeof(MENUITEMINFOW);
         item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
         item.fType = 0;
@@ -115,6 +116,7 @@ inline void create_menu(wchar_t *date)
     }
     ++id;
     {
+        MENUITEMINFOW item = {};
         item.cbSize = sizeof(MENUITEMINFOW);
         item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
         item.fType = 0;
@@ -128,6 +130,7 @@ inline void create_menu(wchar_t *date)
     InsertMenuW(menu, id++, MF_SEPARATOR, TRUE, NULL);
     ++id;
     {
+        MENUITEMINFOW item = {};
         item.cbSize = sizeof(MENUITEMINFOW);
         item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
         item.fType = 0;
