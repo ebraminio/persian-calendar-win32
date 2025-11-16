@@ -1,7 +1,7 @@
 Installation
 ------------
 
-* Find `persian-calendar.exe` from release section of GitHub
+* Find latest `persian-calendar.exe` from https://t.me/Persian_Calendar
 * Press Windows+R
 * Open `shell:startup`
 * Drop the persian-calendar.exe on the folder.
