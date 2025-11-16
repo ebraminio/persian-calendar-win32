@@ -1,10 +1,20 @@
+The most simple way to display Persian calendar as a tray icon in your Windows machine.
+
+ساده‌ترین برنامهٔ نمایش تقویم فارسی به‌عنوان یک آیکون در نوار اعلان ویندوز.
+
+It looks something like this
+
+<img width="372" height="231" alt="image" src="https://github.com/user-attachments/assets/e15b9ce4-16f1-4a78-9309-8e431eb523a9" />
+
+and it has a support from Windows XP to Windows 11's HiDPI and dark mode for the tray menu. 
+
 Installation
 ------------
 
-* Find latest `persian-calendar.exe` from https://t.me/Persian_Calendar
-* Press Windows+R
-* Open `shell:startup`
-* Drop the persian-calendar.exe on the folder.
+* Find a `persian-calendar.exe` from the latest version of https://github.com/persian-calendar/persian-calendar-win32/releases
+* Press Windows+R in your Windows machine
+* Type `shell:startup` and enter
+* Drop the `persian-calendar.exe` on the folder.
 
 Build
 -----
