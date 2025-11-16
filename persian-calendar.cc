@@ -363,7 +363,7 @@ extern "C" void _start()
         HMODULE uxtheme = LoadLibraryW(L"uxtheme.dll");
         if (uxtheme)
         {
-            typedef INT(WINAPI * func_t)(INT); // SetPreferredAppMode's signature, is in 135 of uxtheme
+            typedef INT(WINAPI * func_t)(INT); // undocumented SetPreferredAppMode's signature
             func_t func = (func_t)(void *)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
             if (func)
                 func(/*Allow dark*/ 1);
