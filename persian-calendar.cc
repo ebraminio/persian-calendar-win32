@@ -15,7 +15,7 @@ static HICON create_text_icon(HDC hdc, const wchar_t *text, bool black_backgroun
 {
     const int size = 128;
     HBITMAP hbmColor = CreateCompatibleBitmap(hdc, size, size);
-    HBITMAP hbmMask = CreateBitmap(size, size, 1, 1, NULL);
+    HBITMAP hbmMask = CreateBitmap(size, size, 1, 1, nullptr);
 
     HDC memDC = CreateCompatibleDC(hdc);
     HGDIOBJ oldBmp = SelectObject(memDC, hbmColor);
@@ -71,7 +71,7 @@ static void apply_local_digits(wchar_t *buf)
             buf[i] += L'۰' - L'0';
 }
 
-static HMENU menu = 0;
+static HMENU menu = nullptr;
 const unsigned menu_id_start = 1000;
 static unsigned local_digits_id = 0;
 static unsigned black_background_id = 0;
@@ -92,7 +92,7 @@ static void create_menu(wchar_t *date)
         InsertMenuItemW(menu, id, TRUE, &menu_item);
     }
     ++id;
-    InsertMenuA(menu, id++, MF_SEPARATOR, TRUE, NULL);
+    InsertMenuA(menu, id++, MF_SEPARATOR, TRUE, nullptr);
     ++id;
     {
         menu_item.cbSize = sizeof(MENUITEMINFOW);
@@ -116,7 +116,7 @@ static void create_menu(wchar_t *date)
         black_background_id = id;
     }
     ++id;
-    InsertMenuA(menu, id++, MF_SEPARATOR, TRUE, NULL);
+    InsertMenuA(menu, id++, MF_SEPARATOR, TRUE, nullptr);
     ++id;
     {
         menu_item.cbSize = sizeof(MENUITEMINFOW);
@@ -140,7 +140,7 @@ static unsigned today_jdn()
     return gregorian_to_jdn(st.wYear, st.wMonth, st.wDay);
 }
 
-const wchar_t *months[] = {
+const static wchar_t *months[] = {
     L"فروردین",
     L"اردیبهشت",
     L"خرداد",
@@ -154,7 +154,7 @@ const wchar_t *months[] = {
     L"بهمن",
     L"اسفند",
 };
-const wchar_t *weekdays[] = {
+const static wchar_t *weekdays[] = {
     L"شنبه",
     L"یکشنبه",
     L"دوشنبه",
@@ -205,14 +205,14 @@ struct Registry
             HKEY_CURRENT_USER,
             "Software\\" appId,
             0,
-            NULL,
+            nullptr,
             REG_OPTION_NON_VOLATILE,
             KEY_WRITE | KEY_READ,
-            NULL,
+            nullptr,
             &key,
-            NULL);
+            nullptr);
         if (status != ERROR_SUCCESS)
-            key = NULL;
+            key = nullptr;
     }
 
     void init_global_variables() const
@@ -223,10 +223,10 @@ struct Registry
         DWORD size = sizeof(DWORD);
         DWORD type = 0;
 
-        if (RegQueryValueExA(key, local_digits_key, NULL, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
+        if (RegQueryValueExA(key, local_digits_key, nullptr, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
             local_digits = !!value;
 
-        if (RegQueryValueExA(key, black_background_key, NULL, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
+        if (RegQueryValueExA(key, black_background_key, nullptr, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
             black_background = !!value;
     }
 
@@ -267,7 +267,7 @@ private:
     constexpr static char *black_background_key = const_cast<char *>("BlackBackground");
 };
 
-NOTIFYICONDATAW notify_icon_data = {};
+static NOTIFYICONDATAW notify_icon_data = {};
 #define ID_TIMER 1
 #define ID_NOTIFY_ICON_CLICK (WM_USER + 1)
 static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -290,7 +290,7 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
             GetCursorPos(&p);
             SetForegroundWindow(hwnd);
             BOOL cmd = TrackPopupMenuEx(menu, TPM_RIGHTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_LAYOUTRTL,
-                                        p.x, p.y, hwnd, 0);
+                                        p.x, p.y, hwnd, nullptr);
             SendMessageA(hwnd, WM_COMMAND, (WPARAM)cmd, 0);
         }
         break;
@@ -320,16 +320,19 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
             return 0;
         }
         break;
+    default:
+        break;
     }
     return DefWindowProcA(hwnd, msg, wparam, lparam);
 }
 
-extern "C" void _start()
+extern "C" void _start();
+void _start()
 {
-    HANDLE mutex = CreateMutexA(0, 0, const_cast<char *>(appId));
+    HANDLE mutex = CreateMutexA(nullptr, 0, const_cast<char *>(appId));
     if (!mutex || GetLastError() == ERROR_ALREADY_EXISTS)
         return;
-    HMODULE module = GetModuleHandleA(0);
+    HMODULE module = GetModuleHandleA(nullptr);
 
     static WNDCLASSEXA wc = {};
     wc.cbSize = sizeof(WNDCLASSEXW);
@@ -339,7 +342,7 @@ extern "C" void _start()
     if (!RegisterClassExA(&wc))
         ExitProcess(1);
 
-    HWND hwnd = CreateWindowExA(0, appId, 0, 0, 0, 0, 0, 0, 0, 0, module, 0);
+    HWND hwnd = CreateWindowExA(0, appId, nullptr, 0, 0, 0, 0, 0, nullptr, nullptr, module, nullptr);
     if (!hwnd)
         ExitProcess(1);
 
@@ -374,10 +377,10 @@ extern "C" void _start()
     notify_icon_data.uID = 0;
     Shell_NotifyIconW(NIM_ADD, &notify_icon_data);
     update(hwnd, &notify_icon_data);
-    SetTimer(hwnd, ID_TIMER, 60000, 0);
+    SetTimer(hwnd, ID_TIMER, 60000, nullptr);
 
     MSG msg;
-    while (GetMessageA(&msg, 0, 0, 0) > 0)
+    while (GetMessageA(&msg, nullptr, 0, 0) > 0)
     {
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
