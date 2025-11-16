@@ -28,10 +28,10 @@ static HICON create_text_icon(HDC hdc, const wchar_t *text, bool black_backgroun
     SetBkMode(memDC, TRANSPARENT);
     SetTextColor(memDC, RGB(255, 255, 255));
 
-    HFONT hFont = CreateFontW(
+    HFONT hFont = CreateFontA(
         -size + 4, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE,
         DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS,
-        CLEARTYPE_QUALITY, VARIABLE_PITCH, L"Calibri");
+        CLEARTYPE_QUALITY, VARIABLE_PITCH, "Calibri");
     HFONT oldFont = (HFONT)SelectObject(memDC, hFont);
 
     DrawTextW(memDC, text, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
@@ -92,7 +92,7 @@ static void create_menu(wchar_t *date)
         InsertMenuItemW(menu, id, TRUE, &menu_item);
     }
     ++id;
-    InsertMenuW(menu, id++, MF_SEPARATOR, TRUE, NULL);
+    InsertMenuA(menu, id++, MF_SEPARATOR, TRUE, NULL);
     ++id;
     {
         menu_item.cbSize = sizeof(MENUITEMINFOW);
@@ -116,7 +116,7 @@ static void create_menu(wchar_t *date)
         black_background_id = id;
     }
     ++id;
-    InsertMenuW(menu, id++, MF_SEPARATOR, TRUE, NULL);
+    InsertMenuA(menu, id++, MF_SEPARATOR, TRUE, NULL);
     ++id;
     {
         menu_item.cbSize = sizeof(MENUITEMINFOW);
@@ -291,7 +291,7 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
             SetForegroundWindow(hwnd);
             BOOL cmd = TrackPopupMenuEx(menu, TPM_RIGHTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_LAYOUTRTL,
                                         p.x, p.y, hwnd, 0);
-            SendMessageW(hwnd, WM_COMMAND, (WPARAM)cmd, 0);
+            SendMessageA(hwnd, WM_COMMAND, (WPARAM)cmd, 0);
         }
         break;
     case WM_COMMAND:
@@ -321,7 +321,7 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
         }
         break;
     }
-    return DefWindowProcW(hwnd, msg, wparam, lparam);
+    return DefWindowProcA(hwnd, msg, wparam, lparam);
 }
 
 extern "C" void _start()
@@ -329,7 +329,7 @@ extern "C" void _start()
     HANDLE mutex = CreateMutexA(0, 0, const_cast<char *>(appId));
     if (!mutex || GetLastError() == ERROR_ALREADY_EXISTS)
         return;
-    HMODULE module = GetModuleHandleW(0);
+    HMODULE module = GetModuleHandleA(0);
 
     static WNDCLASSEXA wc = {};
     wc.cbSize = sizeof(WNDCLASSEXW);
@@ -377,7 +377,7 @@ extern "C" void _start()
     SetTimer(hwnd, ID_TIMER, 60000, 0);
 
     MSG msg;
-    while (GetMessageW(&msg, 0, 0, 0) > 0)
+    while (GetMessageA(&msg, 0, 0, 0) > 0)
     {
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
