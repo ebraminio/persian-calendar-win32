@@ -32,14 +32,14 @@ static HICON create_text_icon(HDC hdc, const wchar_t *text, bool black_backgroun
         -size + 4, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE,
         DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS,
         CLEARTYPE_QUALITY, VARIABLE_PITCH, "Calibri");
-    HFONT oldFont = (HFONT)SelectObject(memDC, hFont);
+    HFONT oldFont = reinterpret_cast<HFONT>(SelectObject(memDC, hFont));
 
     DrawTextW(memDC, text, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
     SelectObject(memDC, hbmMask);
 
     if (!black_background)
-        FillRect(memDC, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
+        FillRect(memDC, &rc, reinterpret_cast<HBRUSH>(GetStockObject(WHITE_BRUSH)));
 
     SetTextColor(memDC, RGB(0, 0, 0));
     DrawTextW(memDC, text, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
@@ -291,7 +291,7 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
             SetForegroundWindow(hwnd);
             BOOL cmd = TrackPopupMenuEx(menu, TPM_RIGHTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_LAYOUTRTL,
                                         p.x, p.y, hwnd, nullptr);
-            SendMessageA(hwnd, WM_COMMAND, (WPARAM)cmd, 0);
+            SendMessageA(hwnd, WM_COMMAND, static_cast<WPARAM>(cmd), 0);
         }
         break;
     case WM_COMMAND:
@@ -300,7 +300,7 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
             static MENUITEMINFOW menu_item = {};
             menu_item.cbSize = sizeof(MENUITEMINFOW);
             menu_item.fMask = MIIM_ID | MIIM_DATA;
-            if (GetMenuItemInfoW(menu, (UINT)wparam, FALSE, &menu_item))
+            if (GetMenuItemInfoW(menu, static_cast<UINT>(wparam), FALSE, &menu_item))
             {
                 if (menu_item.wID == local_digits_id)
                 {
@@ -355,7 +355,8 @@ void _start()
         if (user32)
         {
             typedef BOOL(WINAPI * func_t)(DPI_AWARENESS_CONTEXT);
-            func_t func = (func_t)(void *)GetProcAddress(user32, "SetProcessDpiAwarenessContext");
+            func_t func = reinterpret_cast<func_t>(reinterpret_cast<void *>(
+                GetProcAddress(user32, "SetProcessDpiAwarenessContext")));
             if (func)
                 func(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
             FreeLibrary(user32);
@@ -366,7 +367,8 @@ void _start()
         if (uxtheme)
         {
             typedef INT(WINAPI * func_t)(INT); // undocumented SetPreferredAppMode's signature
-            func_t func = (func_t)(void *)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
+            func_t func = reinterpret_cast<func_t>(reinterpret_cast<void *>(
+                GetProcAddress(uxtheme, MAKEINTRESOURCEA(135))));
             if (func)
                 func(/*Allow dark*/ 1);
             FreeLibrary(uxtheme);
