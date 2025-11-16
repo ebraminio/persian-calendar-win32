@@ -18,3 +18,18 @@ jobs:
         with:
           name: exe
           path: persian-calendar.exe
+
+  ubuntu-continue:
+    needs: upload-exe
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download EXE artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: exe
+          path: ./downloaded-exe
+
+      - name: Show downloaded files
+        run: |
+          ls -la downloaded-exe
+          file downloaded-exe/persian-calendar.exe || true
