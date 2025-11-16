@@ -76,59 +76,56 @@ const unsigned menu_id_start = 1000;
 static unsigned local_digits_id = 0;
 static unsigned black_background_id = 0;
 static unsigned exit_id = 0;
+MENUITEMINFOW menu_item = {};
 static void create_menu(wchar_t *date)
 {
     HMENU old_menu = menu;
     menu = CreatePopupMenu();
     unsigned id = menu_id_start;
     {
-        MENUITEMINFOW item = {};
-        item.cbSize = sizeof(MENUITEMINFOW);
-        item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
-        item.fType = 0;
-        item.fState = MFS_DISABLED;
-        item.wID = id;
-        item.dwTypeData = date;
-        InsertMenuItemW(menu, id, TRUE, &item);
+        menu_item.cbSize = sizeof(MENUITEMINFOW);
+        menu_item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
+        menu_item.fType = 0;
+        menu_item.fState = MFS_DISABLED;
+        menu_item.wID = id;
+        menu_item.dwTypeData = date;
+        InsertMenuItemW(menu, id, TRUE, &menu_item);
     }
     ++id;
     InsertMenuW(menu, id++, MF_SEPARATOR, TRUE, NULL);
     ++id;
     {
-        MENUITEMINFOW item = {};
-        item.cbSize = sizeof(MENUITEMINFOW);
-        item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
-        item.fType = 0;
-        item.fState = local_digits ? MFS_CHECKED : 0;
-        item.wID = id;
-        item.dwTypeData = const_cast<wchar_t *>(L"اعداد فارسی");
-        InsertMenuItemW(menu, id, TRUE, &item);
+        menu_item.cbSize = sizeof(MENUITEMINFOW);
+        menu_item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
+        menu_item.fType = 0;
+        menu_item.fState = local_digits ? MFS_CHECKED : 0;
+        menu_item.wID = id;
+        menu_item.dwTypeData = const_cast<wchar_t *>(L"اعداد فارسی");
+        InsertMenuItemW(menu, id, TRUE, &menu_item);
         local_digits_id = id;
     }
     ++id;
     {
-        MENUITEMINFOW item = {};
-        item.cbSize = sizeof(MENUITEMINFOW);
-        item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
-        item.fType = 0;
-        item.fState = black_background ? MFS_CHECKED : 0;
-        item.wID = id;
-        item.dwTypeData = const_cast<wchar_t *>(L"پیش‌زمینهٔ سیاه آیکون");
-        InsertMenuItemW(menu, id, TRUE, &item);
+        menu_item.cbSize = sizeof(MENUITEMINFOW);
+        menu_item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
+        menu_item.fType = 0;
+        menu_item.fState = black_background ? MFS_CHECKED : 0;
+        menu_item.wID = id;
+        menu_item.dwTypeData = const_cast<wchar_t *>(L"پیش‌زمینهٔ سیاه آیکون");
+        InsertMenuItemW(menu, id, TRUE, &menu_item);
         black_background_id = id;
     }
     ++id;
     InsertMenuW(menu, id++, MF_SEPARATOR, TRUE, NULL);
     ++id;
     {
-        MENUITEMINFOW item = {};
-        item.cbSize = sizeof(MENUITEMINFOW);
-        item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
-        item.fType = 0;
-        item.fState = 0;
-        item.wID = id;
-        item.dwTypeData = const_cast<wchar_t *>(L"خروج");
-        InsertMenuItemW(menu, id, TRUE, &item);
+        menu_item.cbSize = sizeof(MENUITEMINFOW);
+        menu_item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
+        menu_item.fType = 0;
+        menu_item.fState = 0;
+        menu_item.wID = id;
+        menu_item.dwTypeData = const_cast<wchar_t *>(L"خروج");
+        InsertMenuItemW(menu, id, TRUE, &menu_item);
         exit_id = id;
     }
     ++id;
