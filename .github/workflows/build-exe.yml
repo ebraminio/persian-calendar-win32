@@ -10,10 +10,9 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ilammy/msvc-dev-cmd@v1
-      - name: Build EXE\
+      - name: Build EXE
         shell: cmd
-        run: build.bat
+        run: call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86 && build.bat
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
