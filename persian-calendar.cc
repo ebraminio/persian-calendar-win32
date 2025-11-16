@@ -7,13 +7,6 @@
 #include <stdint.h>
 #include "persian-calendar.h"
 
-#pragma comment(lib, "kernel32.lib")
-#pragma comment(lib, "user32.lib")
-#pragma comment(lib, "shell32.lib")
-#pragma comment(lib, "gdi32.lib")
-#pragma comment(lib, "shlwapi.lib")
-#pragma comment(lib, "advapi32.lib")
-
 // A logger with CRT that works with wine also, so let's have it around
 // static void log(const char *s) {
 //     DWORD written;
@@ -85,7 +78,7 @@ const unsigned menu_id_start = 1000;
 static unsigned local_digits_id = 0;
 static unsigned black_background_id = 0;
 static unsigned exit_id = 0;
-inline void create_menu(wchar_t *date)
+static void create_menu(wchar_t *date)
 {
     HMENU old_menu = menu;
     menu = CreatePopupMenu();
@@ -145,7 +138,7 @@ inline void create_menu(wchar_t *date)
         DestroyMenu(old_menu);
 }
 
-inline uint32_t today_jdn()
+static uint32_t today_jdn()
 {
     SYSTEMTIME st;
     GetLocalTime(&st);
@@ -175,7 +168,7 @@ const wchar_t *weekdays[] = {
     L"پنجشنبه",
     L"جمعه",
 };
-void update(HWND hwnd, NOTIFYICONDATAW *notify_icon_data)
+static void update(HWND hwnd, NOTIFYICONDATAW *notify_icon_data)
 {
     uint32_t jdn = today_jdn();
     persian_date_t date = jdn_to_persian(jdn);
@@ -360,7 +353,7 @@ extern "C" void _start()
         if (user32)
         {
             typedef BOOL(WINAPI * func_t)(DPI_AWARENESS_CONTEXT);
-            func_t func = (func_t)GetProcAddress(user32, "SetProcessDpiAwarenessContext");
+            func_t func = (func_t)(void *)GetProcAddress(user32, "SetProcessDpiAwarenessContext");
             if (func)
                 func(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
             FreeLibrary(user32);
@@ -371,7 +364,7 @@ extern "C" void _start()
         if (uxtheme)
         {
             typedef INT(WINAPI * func_t)(INT); // SetPreferredAppMode's signature, is in 135 of uxtheme
-            func_t func = (func_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
+            func_t func = (func_t)(void *)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
             if (func)
                 func(/*Allow dark*/ 1);
             FreeLibrary(uxtheme);
