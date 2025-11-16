@@ -2,9 +2,7 @@
 #include <windows.h>
 #include <shellapi.h>
 #include <shlwapi.h>
-#include <wchar.h>
 #include <shellscalingapi.h>
-#include <stdint.h>
 #include "persian-calendar.h"
 
 // A logger with CRT that works with wine also, so let's have it around
@@ -138,7 +136,7 @@ static void create_menu(wchar_t *date)
         DestroyMenu(old_menu);
 }
 
-static uint32_t today_jdn()
+static unsigned today_jdn()
 {
     SYSTEMTIME st;
     GetLocalTime(&st);
@@ -170,7 +168,7 @@ const wchar_t *weekdays[] = {
 };
 static void update(HWND hwnd, NOTIFYICONDATAW *notify_icon_data)
 {
-    uint32_t jdn = today_jdn();
+    unsigned jdn = today_jdn();
     persian_date_t date = jdn_to_persian(jdn);
 
     wchar_t day[10];
