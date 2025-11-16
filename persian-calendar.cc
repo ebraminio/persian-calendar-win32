@@ -300,7 +300,7 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
             static MENUITEMINFOW menu_item = {};
             menu_item.cbSize = sizeof(MENUITEMINFOW);
             menu_item.fMask = MIIM_ID | MIIM_DATA;
-            if (GetMenuItemInfoW(menu, wparam, FALSE, &menu_item))
+            if (GetMenuItemInfoW(menu, (UINT)wparam, FALSE, &menu_item))
             {
                 if (menu_item.wID == local_digits_id)
                 {
