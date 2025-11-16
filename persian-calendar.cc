@@ -326,12 +326,8 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
     return DefWindowProcA(hwnd, msg, wparam, lparam);
 }
 
-#ifdef __llvm__
 extern "C" void start();
 void start()
-#else
-void _start()
-#endif
 {
     HANDLE mutex = CreateMutexA(nullptr, 0, const_cast<char *>(appId));
     if (!mutex || GetLastError() == ERROR_ALREADY_EXISTS)
