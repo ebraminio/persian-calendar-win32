@@ -196,14 +196,14 @@ static void update(HWND hwnd, NOTIFYICONDATAW *notify_icon_data)
     Shell_NotifyIconW(NIM_MODIFY, notify_icon_data);
 }
 
-#define appId L"PersianCalendarWin32"
+#define appId "PersianCalendarWin32"
 struct Registry
 {
     Registry()
     {
-        LONG status = RegCreateKeyExW(
+        LONG status = RegCreateKeyExA(
             HKEY_CURRENT_USER,
-            L"Software\\" appId,
+            "Software\\" appId,
             0,
             NULL,
             REG_OPTION_NON_VOLATILE,
@@ -223,10 +223,10 @@ struct Registry
         DWORD size = sizeof(DWORD);
         DWORD type = 0;
 
-        if (RegQueryValueExW(key, local_digits_key, NULL, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
+        if (RegQueryValueExA(key, local_digits_key, NULL, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
             local_digits = !!value;
 
-        if (RegQueryValueExW(key, black_background_key, NULL, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
+        if (RegQueryValueExA(key, black_background_key, NULL, &type, reinterpret_cast<LPBYTE>(&value), &size) == ERROR_SUCCESS && type == REG_DWORD)
             black_background = !!value;
     }
 
@@ -249,12 +249,12 @@ struct Registry
 private:
     HKEY key;
 
-    void set_bool(wchar_t *name, bool value) const
+    void set_bool(char *name, bool value) const
     {
         if (!key)
             return;
         DWORD dword = value ? 1 : 0;
-        RegSetValueExW(
+        RegSetValueExA(
             key,
             name,
             0,
@@ -263,8 +263,8 @@ private:
             sizeof(DWORD));
     }
 
-    constexpr static wchar_t *local_digits_key = const_cast<wchar_t *>(L"LocalDigits");
-    constexpr static wchar_t *black_background_key = const_cast<wchar_t *>(L"BlackBackground");
+    constexpr static char *local_digits_key = const_cast<char *>("LocalDigits");
+    constexpr static char *black_background_key = const_cast<char *>("BlackBackground");
 };
 
 NOTIFYICONDATAW notify_icon_data = {};
@@ -326,25 +326,25 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
 
 extern "C" void _start()
 {
-    HANDLE mutex = CreateMutexW(0, 0, const_cast<wchar_t *>(appId));
+    HANDLE mutex = CreateMutexA(0, 0, const_cast<char *>(appId));
     if (!mutex || GetLastError() == ERROR_ALREADY_EXISTS)
         return;
     HMODULE module = GetModuleHandleW(0);
 
-    static WNDCLASSEXW wc = {};
+    static WNDCLASSEXA wc = {};
     wc.cbSize = sizeof(WNDCLASSEXW);
     wc.hInstance = module;
     wc.lpfnWndProc = window_procedure;
     wc.lpszClassName = appId;
-    if (!RegisterClassExW(&wc))
+    if (!RegisterClassExA(&wc))
         ExitProcess(1);
 
-    HWND hwnd = CreateWindowExW(0, appId, 0, 0, 0, 0, 0, 0, 0, 0, module, 0);
+    HWND hwnd = CreateWindowExA(0, appId, 0, 0, 0, 0, 0, 0, 0, 0, module, 0);
     if (!hwnd)
         ExitProcess(1);
 
     {
-        HMODULE user32 = LoadLibraryW(L"user32.dll");
+        HMODULE user32 = LoadLibraryA("user32.dll");
         if (user32)
         {
             typedef BOOL(WINAPI * func_t)(DPI_AWARENESS_CONTEXT);
@@ -355,7 +355,7 @@ extern "C" void _start()
         }
     }
     {
-        HMODULE uxtheme = LoadLibraryW(L"uxtheme.dll");
+        HMODULE uxtheme = LoadLibraryA("uxtheme.dll");
         if (uxtheme)
         {
             typedef INT(WINAPI * func_t)(INT); // undocumented SetPreferredAppMode's signature
@@ -386,6 +386,6 @@ extern "C" void _start()
     Shell_NotifyIconW(NIM_DELETE, &notify_icon_data);
     DestroyIcon(notify_icon_data.hIcon);
 
-    UnregisterClassW(appId, module);
+    UnregisterClassA(appId, module);
     ExitProcess(0);
 }
