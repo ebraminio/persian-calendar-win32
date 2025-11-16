@@ -45,7 +45,7 @@ jobs:
         run: |
           # Upload the file
           MESSAGE_ID=$(
-            curl -s -X POST "https://api.telegram.org/bot$TOKEN/sendDocument" \
+            curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_TOKEN }}/sendDocument" \
               -F chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
               -F document=@"downloaded-exe/persian-calendar.exe" | jq '.result.message_id'
           )
