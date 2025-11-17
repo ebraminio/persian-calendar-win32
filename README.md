@@ -12,9 +12,8 @@ Installation
 ------------
 
 * Find a `persian-calendar.exe` from the latest version of https://github.com/persian-calendar/persian-calendar-win32/releases
-* Press Windows+R in your Windows machine
-* Type `shell:startup` and enter
-* Drop the `persian-calendar.exe` on the folder.
+* Press Win+E (brings the Explorer) then Ctrl+L (opens the location bar), then type `shell:startup` and enter
+* Drop the `persian-calendar.exe` on the folder
 
 Build
 -----
