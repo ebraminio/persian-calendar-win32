@@ -11,7 +11,7 @@ License: GNU/LGPL _ Open Source & Free :: Version: 2.80 : [2020=1399]
 990=30*33 & 12053=(365*33)+(32/4) & 36524=(365*100)+(100/4)-(100/100)
 1461=(365*4)+(4/4) & 146097=(365*400)+(400/4)-(400/100)+(400/400)  */
 
-constexpr unsigned gregorian_to_jdn(unsigned gy, unsigned gm, unsigned gd)
+inline unsigned gregorian_to_jdn(unsigned gy, unsigned gm, unsigned gd)
 {
   unsigned gy2 = (gm > 2) ? gy + 1 : gy;
   static const unsigned g_d_m[12] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};

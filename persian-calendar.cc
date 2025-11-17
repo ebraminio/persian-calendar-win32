@@ -335,12 +335,12 @@ static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPA
     return DefWindowProcA(hwnd, msg, wparam, lparam);
 }
 
-extern "C" void start();
+extern "C" [[noreturn]] void start();
 void start()
 {
     HANDLE mutex = CreateMutexA(nullptr, 0, const_cast<char *>(appId));
     if (!mutex || GetLastError() == ERROR_ALREADY_EXISTS)
-        return;
+        ExitProcess(EXIT_FAILURE);
     HMODULE module = GetModuleHandleA(nullptr);
 
     static WNDCLASSEXA wc = {};
@@ -349,11 +349,11 @@ void start()
     wc.lpfnWndProc = window_procedure;
     wc.lpszClassName = appId;
     if (!RegisterClassExA(&wc))
-        ExitProcess(1);
+        ExitProcess(EXIT_FAILURE);
 
     HWND hwnd = CreateWindowExA(0, appId, nullptr, 0, 0, 0, 0, 0, nullptr, nullptr, module, nullptr);
     if (!hwnd)
-        ExitProcess(1);
+        ExitProcess(EXIT_FAILURE);
 
     {
         HMODULE user32 = LoadLibraryA("user32.dll");
@@ -401,5 +401,5 @@ void start()
     DestroyIcon(notify_icon_data.hIcon);
 
     UnregisterClassA(appId, module);
-    ExitProcess(0);
+    ExitProcess(EXIT_SUCCESS);
 }
