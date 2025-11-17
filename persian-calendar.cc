@@ -13,7 +13,7 @@
 
 static HICON create_text_icon(HDC hdc, const wchar_t *text, bool black_background)
 {
-    const int size = 128;
+    const int size = GetSystemMetrics(SM_CXSMICON);
     HBITMAP hbmColor = CreateCompatibleBitmap(hdc, size, size);
     HBITMAP hbmMask = CreateBitmap(size, size, 1, 1, nullptr);
 
@@ -385,7 +385,7 @@ void start()
     while (GetMessageA(&msg, nullptr, 0, 0) > 0)
     {
         TranslateMessage(&msg);
-        DispatchMessageW(&msg);
+        DispatchMessageA(&msg);
     }
 
     Shell_NotifyIconW(NIM_DELETE, &notify_icon_data);
