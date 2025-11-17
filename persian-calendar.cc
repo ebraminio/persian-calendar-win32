@@ -64,13 +64,6 @@ static HICON create_text_icon(HDC hdc, const wchar_t *text, bool black_backgroun
 
 static bool local_digits = true;
 static bool black_background = true;
-static void apply_local_digits(wchar_t *buf)
-{
-    if (local_digits)
-        for (unsigned i = 0; buf[i]; ++i)
-            buf[i] += L'۰' - L'0';
-}
-
 static HMENU menu = nullptr;
 const unsigned menu_id_start = 1000;
 static unsigned local_digits_id = 0;
@@ -170,19 +163,35 @@ static void update(HWND hwnd, NOTIFYICONDATAW *notify_icon_data)
 
     wchar_t day[10];
     wnsprintfW(day, sizeof(day), L"%d", date.day);
-    apply_local_digits(day);
+    if (local_digits)
+    {
+        day[0] += L'۰' - L'0';
+        if (day[1])
+            day[1] += L'۰' - L'0';
+    }
 
     wchar_t month[10];
     wnsprintfW(month, sizeof(month), L"%d", date.month);
-    apply_local_digits(month);
+    if (local_digits)
+    {
+        month[0] += L'۰' - L'0';
+        if (month[1])
+            month[1] += L'۰' - L'0';
+    }
 
     wchar_t year[10];
     wnsprintfW(year, sizeof(year), L"%d", date.year);
-    apply_local_digits(year);
+    if (local_digits)
+    {
+        year[0] += L'۰' - L'0';
+        year[1] += L'۰' - L'0';
+        year[2] += L'۰' - L'0';
+        year[3] += L'۰' - L'0';
+    }
 
     wnsprintfW(notify_icon_data->szTip, sizeof(notify_icon_data->szTip),
                L"%ls، %ls %ls/%ls %ls",
-               weekdays[(jdn + 3) % 7], day, months[date.month - 1], month, year);
+               weekdays[(jdn + 3) % 7], day, months[(date.month - 1) % 12], month, year);
 
     // szTip allocated string is both used for the tooltip and first item of the menu
     create_menu(notify_icon_data->szTip);
