@@ -5,12 +5,6 @@
 #include <shellscalingapi.h>
 #include "persian-calendar.h"
 
-// A logger with CRT that works with wine also, so let's have it around
-// static void log(const char *s) {
-//     DWORD written;
-//     WriteFile(GetStdHandle(STD_OUTPUT_HANDLE), s, (DWORD)lstrlenA(s), &written, NULL);
-// }
-
 static HICON create_text_icon(HDC hdc, const wchar_t *text, bool black_background)
 {
     const int size = GetSystemMetrics(SM_CXSMICON);
@@ -85,7 +79,7 @@ static void create_menu(wchar_t *date)
         InsertMenuItemW(menu, id, TRUE, &menu_item);
     }
     ++id;
-    InsertMenuA(menu, id++, MF_SEPARATOR, TRUE, nullptr);
+    InsertMenuA(menu, id, MF_SEPARATOR, TRUE, nullptr);
     ++id;
     {
         menu_item.cbSize = sizeof(MENUITEMINFOW);
@@ -109,7 +103,7 @@ static void create_menu(wchar_t *date)
         black_background_id = id;
     }
     ++id;
-    InsertMenuA(menu, id++, MF_SEPARATOR, TRUE, nullptr);
+    InsertMenuA(menu, id, MF_SEPARATOR, TRUE, nullptr);
     ++id;
     {
         menu_item.cbSize = sizeof(MENUITEMINFOW);
