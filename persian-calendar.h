@@ -11,11 +11,18 @@ License: GNU/LGPL _ Open Source & Free :: Version: 2.80 : [2020=1399]
 990=30*33 & 12053=(365*33)+(32/4) & 36524=(365*100)+(100/4)-(100/100)
 1461=(365*4)+(4/4) & 146097=(365*400)+(400/4)-(400/100)+(400/400)  */
 
-inline unsigned gregorian_to_jdn(unsigned gy, unsigned gm, unsigned gd)
+constexpr unsigned gregorian_to_jdn(unsigned gy, unsigned gm, unsigned gd)
 {
   unsigned gy2 = (gm > 2) ? gy + 1 : gy;
-  static const unsigned g_d_m[12] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
-  return 355666 + (365 * gy) + (gy2 + 3) / 4 - (gy2 + 99) / 100 + (gy2 + 399) / 400 + gd + g_d_m[gm - 1];
+  unsigned g_d_m = 0;
+  switch (gm) {
+    case  1: g_d_m =   0; break; case  2: g_d_m =  31; break; case  3: g_d_m =  59; break;
+    case  4: g_d_m =  90; break; case  5: g_d_m = 120; break; case  6: g_d_m = 151; break;
+    case  7: g_d_m = 181; break; case  8: g_d_m = 212; break; case  9: g_d_m = 243; break;
+    case 10: g_d_m = 273; break; case 11: g_d_m = 304; break; case 12: g_d_m = 334; break;
+    default: break;
+  }
+  return 355666 + (365 * gy) + (gy2 + 3) / 4 - (gy2 + 99) / 100 + (gy2 + 399) / 400 + gd + g_d_m;
 }
 
 typedef struct { unsigned year; unsigned month; unsigned day; } persian_date_t;
