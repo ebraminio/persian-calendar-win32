@@ -6,7 +6,7 @@
 
 static HICON create_text_icon(HDC hdc, const wchar_t *text, bool black_background)
 {
-    const int size = 128; //GetSystemMetrics(SM_CXSMICON);
+    const int size = 128; //GetSystemMetrics(SM_CXSMICON); oversized icon looks better
     HBITMAP hbmColor = CreateCompatibleBitmap(hdc, size, size);
     HBITMAP hbmMask = CreateBitmap(size, size, 1, 1, nullptr);
 
@@ -14,9 +14,7 @@ static HICON create_text_icon(HDC hdc, const wchar_t *text, bool black_backgroun
     HGDIOBJ oldBmp = SelectObject(memDC, hbmColor);
     RECT rc = {0, 0, size, size};
 
-    HBRUSH bgBrush = CreateSolidBrush(RGB(0, 0, 0));
-    FillRect(memDC, &rc, bgBrush);
-    DeleteObject(bgBrush);
+    FillRect(memDC, &rc, reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
 
     SetBkMode(memDC, TRANSPARENT);
     SetTextColor(memDC, RGB(255, 255, 255));
@@ -25,14 +23,13 @@ static HICON create_text_icon(HDC hdc, const wchar_t *text, bool black_backgroun
         -size + 4, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE,
         DEFAULT_CHARSET, OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS,
         CLEARTYPE_QUALITY, VARIABLE_PITCH, "Calibri");
-    HFONT oldFont = reinterpret_cast<HFONT>(SelectObject(memDC, hFont));
+    HGDIOBJ oldFont = SelectObject(memDC, hFont);
 
     DrawTextW(memDC, text, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
     SelectObject(memDC, hbmMask);
 
-    if (!black_background)
-        FillRect(memDC, &rc, reinterpret_cast<HBRUSH>(GetStockObject(WHITE_BRUSH)));
+    FillRect(memDC, &rc, reinterpret_cast<HBRUSH>(GetStockObject(black_background ? BLACK_BRUSH : WHITE_BRUSH)));
 
     SetTextColor(memDC, RGB(0, 0, 0));
     DrawTextW(memDC, text, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
