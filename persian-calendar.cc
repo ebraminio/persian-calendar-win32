@@ -2,7 +2,6 @@
 #include <windows.h>
 #include <shellapi.h>
 #include <shlwapi.h>
-#include <shellscalingapi.h>
 #include "persian-calendar.h"
 
 static HICON create_text_icon(HDC hdc, const wchar_t *text, bool black_background)
@@ -120,13 +119,6 @@ static void create_menu(wchar_t *date)
         DestroyMenu(old_menu);
 }
 
-static unsigned today_jdn()
-{
-    SYSTEMTIME st;
-    GetLocalTime(&st);
-    return gregorian_to_jdn(st.wYear, st.wMonth, st.wDay);
-}
-
 const static wchar_t *months[] = {
     L"فروردین",
     L"اردیبهشت",
@@ -150,12 +142,14 @@ const static wchar_t *weekdays[] = {
     L"پنجشنبه",
     L"جمعه",
 };
-static void update(HWND hwnd, NOTIFYICONDATAW *notify_icon_data)
+static void update(HWND hWnd, NOTIFYICONDATAW *notify_icon_data)
 {
-    unsigned jdn = today_jdn();
+    SYSTEMTIME st;
+    GetLocalTime(&st);
+    unsigned jdn = gregorian_to_jdn(st.wYear, st.wMonth, st.wDay);
     persian_date_t date = jdn_to_persian(jdn);
 
-    wchar_t day[10];
+    wchar_t day[3];
     wnsprintfW(day, sizeof(day), L"%d", date.day);
     if (local_digits)
     {
@@ -164,7 +158,7 @@ static void update(HWND hwnd, NOTIFYICONDATAW *notify_icon_data)
             day[1] += L'۰' - L'0';
     }
 
-    wchar_t month[10];
+    wchar_t month[3];
     wnsprintfW(month, sizeof(month), L"%d", date.month);
     if (local_digits)
     {
@@ -173,7 +167,7 @@ static void update(HWND hwnd, NOTIFYICONDATAW *notify_icon_data)
             month[1] += L'۰' - L'0';
     }
 
-    wchar_t year[10];
+    wchar_t year[5];
     wnsprintfW(year, sizeof(year), L"%d", date.year);
     if (local_digits)
     {
@@ -190,9 +184,9 @@ static void update(HWND hwnd, NOTIFYICONDATAW *notify_icon_data)
     // szTip allocated string is both used for the tooltip and first item of the menu
     create_menu(notify_icon_data->szTip);
 
-    HDC hdc = GetDC(hwnd);
+    HDC hdc = GetDC(hWnd);
     HICON icon = create_text_icon(hdc, day, black_background);
-    ReleaseDC(hwnd, hdc);
+    ReleaseDC(hWnd, hdc);
     if (notify_icon_data->hIcon)
         DestroyIcon(notify_icon_data->hIcon);
     notify_icon_data->hIcon = icon;
@@ -273,60 +267,54 @@ private:
 static NOTIFYICONDATAW notify_icon_data = {};
 #define ID_TIMER 1
 #define ID_NOTIFY_ICON_CLICK (WM_USER + 1)
-static LRESULT CALLBACK window_procedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg)
     {
     case WM_CLOSE:
-        DestroyWindow(hwnd);
+        DestroyWindow(hWnd);
         return 0;
     case WM_DESTROY:
-        PostQuitMessage(0);
+        PostQuitMessage(EXIT_SUCCESS);
         return 0;
     case WM_TIMER:
-        update(hwnd, &notify_icon_data);
-        break;
+        update(hWnd, &notify_icon_data);
+        return 0;
     case ID_NOTIFY_ICON_CLICK:
         if (lparam == WM_LBUTTONUP || lparam == WM_RBUTTONUP)
         {
             POINT p;
             GetCursorPos(&p);
-            SetForegroundWindow(hwnd);
-            BOOL cmd = TrackPopupMenuEx(menu, TPM_RIGHTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_LAYOUTRTL,
-                                        p.x, p.y, hwnd, nullptr);
-            SendMessageA(hwnd, WM_COMMAND, static_cast<WPARAM>(cmd), 0);
+            SetForegroundWindow(hWnd);
+            TrackPopupMenu(menu, TPM_RIGHTALIGN | TPM_RIGHTBUTTON | TPM_LAYOUTRTL,
+                           p.x, p.y, 0, hWnd, nullptr);
         }
-        break;
+        return 0;
     case WM_COMMAND:
-        if (wparam >= menu_id_start)
+        if (wparam == local_digits_id)
         {
-            static MENUITEMINFOW menu_item = {};
-            menu_item.cbSize = sizeof(MENUITEMINFOW);
-            menu_item.fMask = MIIM_ID | MIIM_DATA;
-            if (GetMenuItemInfoW(menu, static_cast<UINT>(wparam), FALSE, &menu_item))
-            {
-                if (menu_item.wID == local_digits_id)
-                {
-                    local_digits = !local_digits;
-                    update(hwnd, &notify_icon_data);
-                    Registry().set_local_digits(local_digits);
-                }
-                else if (menu_item.wID == black_background_id)
-                {
-                    black_background = !black_background;
-                    update(hwnd, &notify_icon_data);
-                    Registry().set_black_background(black_background);
-                }
-                else if (menu_item.wID == exit_id)
-                    PostQuitMessage(0);
-            }
+            local_digits = !local_digits;
+            update(hWnd, &notify_icon_data);
+            Registry().set_local_digits(local_digits);
+            return 0;
+        }
+        else if (wparam == black_background_id)
+        {
+            black_background = !black_background;
+            update(hWnd, &notify_icon_data);
+            Registry().set_black_background(black_background);
+            return 0;
+        }
+        else if (wparam == exit_id)
+        {
+            PostQuitMessage(EXIT_SUCCESS);
             return 0;
         }
         break;
     default:
         break;
     }
-    return DefWindowProcA(hwnd, msg, wparam, lparam);
+    return DefWindowProcA(hWnd, msg, wparam, lparam);
 }
 
 extern "C" [[noreturn]] void start();
@@ -340,13 +328,13 @@ void start()
     static WNDCLASSEXA wc = {};
     wc.cbSize = sizeof(WNDCLASSEXW);
     wc.hInstance = module;
-    wc.lpfnWndProc = window_procedure;
+    wc.lpfnWndProc = WndProc;
     wc.lpszClassName = appId;
     if (!RegisterClassExA(&wc))
         ExitProcess(EXIT_FAILURE);
 
-    HWND hwnd = CreateWindowExA(0, appId, nullptr, 0, 0, 0, 0, 0, nullptr, nullptr, module, nullptr);
-    if (!hwnd)
+    HWND hWnd = CreateWindowExA(0, appId, nullptr, 0, 0, 0, 0, 0, nullptr, nullptr, module, nullptr);
+    if (!hWnd)
         ExitProcess(EXIT_FAILURE);
 
     {
@@ -376,13 +364,13 @@ void start()
 
     Registry().init_global_variables();
     notify_icon_data.cbSize = sizeof(NOTIFYICONDATAW);
-    notify_icon_data.hWnd = hwnd;
+    notify_icon_data.hWnd = hWnd;
     notify_icon_data.uCallbackMessage = ID_NOTIFY_ICON_CLICK;
     notify_icon_data.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
     notify_icon_data.uID = 0;
     Shell_NotifyIconW(NIM_ADD, &notify_icon_data);
-    update(hwnd, &notify_icon_data);
-    SetTimer(hwnd, ID_TIMER, 60000, nullptr);
+    update(hWnd, &notify_icon_data);
+    SetTimer(hWnd, ID_TIMER, 60000, nullptr);
 
     MSG msg;
     while (GetMessageA(&msg, nullptr, 0, 0) > 0)
@@ -395,5 +383,5 @@ void start()
     DestroyIcon(notify_icon_data.hIcon);
 
     UnregisterClassA(appId, module);
-    ExitProcess(EXIT_SUCCESS);
+    ExitProcess(msg.wParam);
 }
