@@ -147,7 +147,7 @@ static void update(HWND hWnd, NOTIFYICONDATAW *notify_icon_data)
     persian_date_t date = jdn_to_persian(jdn);
 
     wchar_t day[3];
-    wnsprintfW(day, sizeof(day), L"%d", date.day);
+    wnsprintfW(day, sizeof(day) / sizeof(wchar_t), L"%d", date.day);
     if (local_digits)
     {
         day[0] += L'۰' - L'0';
@@ -156,7 +156,7 @@ static void update(HWND hWnd, NOTIFYICONDATAW *notify_icon_data)
     }
 
     wchar_t month[3];
-    wnsprintfW(month, sizeof(month), L"%d", date.month);
+    wnsprintfW(month, sizeof(month) / sizeof(wchar_t), L"%d", date.month);
     if (local_digits)
     {
         month[0] += L'۰' - L'0';
@@ -165,7 +165,7 @@ static void update(HWND hWnd, NOTIFYICONDATAW *notify_icon_data)
     }
 
     wchar_t year[5];
-    wnsprintfW(year, sizeof(year), L"%d", date.year);
+    wnsprintfW(year, sizeof(year) / sizeof(wchar_t), L"%d", date.year);
     if (local_digits)
     {
         year[0] += L'۰' - L'0';
@@ -174,7 +174,7 @@ static void update(HWND hWnd, NOTIFYICONDATAW *notify_icon_data)
         year[3] += L'۰' - L'0';
     }
 
-    wnsprintfW(notify_icon_data->szTip, sizeof(notify_icon_data->szTip),
+    wnsprintfW(notify_icon_data->szTip, sizeof(notify_icon_data->szTip) / sizeof(wchar_t),
                L"%ls، %ls %ls/%ls %ls",
                weekdays[(jdn + 3) % 7], day, months[(date.month - 1) % 12], month, year);
 
