@@ -182,7 +182,9 @@ static void update(HWND hWnd, NOTIFYICONDATAW *notify_icon_data)
 #define appId "PersianCalendarWin32"
 struct Registry
 {
-    Registry()
+    Registry(const Registry&) = delete;
+    void operator=(const Registry&) = delete;
+    Registry() : key(nullptr)
     {
         LONG status = RegCreateKeyExA(
             HKEY_CURRENT_USER,
