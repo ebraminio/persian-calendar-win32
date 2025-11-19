@@ -6,7 +6,7 @@
 
 static HICON create_text_icon(HDC hdc, const wchar_t *text, bool black_background)
 {
-    const int size = 128; //GetSystemMetrics(SM_CXSMICON); oversized icon looks better
+    const int size = 128; // GetSystemMetrics(SM_CXSMICON); oversized icon looks better
     HBITMAP hbmColor = CreateCompatibleBitmap(hdc, size, size);
     HBITMAP hbmMask = CreateBitmap(size, size, 1, 1, nullptr);
 
@@ -60,13 +60,8 @@ struct app_state_t
     BOOL black_background;
     HMENU menu;
 
-    app_state_t(NOTIFYICONDATAW *_notify_icon_data) :
-        notify_icon_data(_notify_icon_data), local_digits(true), black_background(true), menu(nullptr)
+    app_state_t(NOTIFYICONDATAW *notify_icon_data_) : notify_icon_data(notify_icon_data_), local_digits(true), black_background(true), menu(nullptr)
     {
-        notify_icon_data->cbSize = sizeof(NOTIFYICONDATAW);
-        notify_icon_data->uCallbackMessage = ID_NOTIFY_ICON_CLICK;
-        notify_icon_data->uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
-        notify_icon_data->uID = 0;
     }
 };
 
@@ -78,8 +73,7 @@ constexpr unsigned second_separator_id = 1004;
 constexpr unsigned exit_id = 1005;
 static void create_menu(app_state_t *state, wchar_t *date)
 {
-    HMENU old_menu = state->menu;
-    state->menu = CreatePopupMenu();
+    HMENU menu = CreatePopupMenu();
     MENUITEMINFOW menu_item;
     SecureZeroMemory(&menu_item, sizeof(MENUITEMINFOW));
     menu_item.cbSize = sizeof(MENUITEMINFOW);
@@ -88,28 +82,30 @@ static void create_menu(app_state_t *state, wchar_t *date)
         menu_item.fState = MFS_DISABLED;
         menu_item.wID = date_id;
         menu_item.dwTypeData = date;
-        InsertMenuItemW(state->menu, date_id, TRUE, &menu_item);
+        InsertMenuItemW(menu, date_id, TRUE, &menu_item);
     }
-    InsertMenuA(state->menu, first_separator_id, MF_SEPARATOR, TRUE, nullptr);
+    InsertMenuA(menu, first_separator_id, MF_SEPARATOR, TRUE, nullptr);
     {
         menu_item.fState = state->local_digits ? MFS_CHECKED : 0;
         menu_item.wID = local_digits_id;
         menu_item.dwTypeData = const_cast<wchar_t *>(L"اعداد فارسی");
-        InsertMenuItemW(state->menu, local_digits_id, TRUE, &menu_item);
+        InsertMenuItemW(menu, local_digits_id, TRUE, &menu_item);
     }
     {
         menu_item.fState = state->black_background ? MFS_CHECKED : 0;
         menu_item.wID = black_background_id;
         menu_item.dwTypeData = const_cast<wchar_t *>(L"پیش‌زمینهٔ سیاه آیکون");
-        InsertMenuItemW(state->menu, black_background_id, TRUE, &menu_item);
+        InsertMenuItemW(menu, black_background_id, TRUE, &menu_item);
     }
-    InsertMenuA(state->menu, second_separator_id, MF_SEPARATOR, TRUE, nullptr);
+    InsertMenuA(menu, second_separator_id, MF_SEPARATOR, TRUE, nullptr);
     {
         menu_item.fState = 0;
         menu_item.wID = exit_id;
         menu_item.dwTypeData = const_cast<wchar_t *>(L"خروج");
-        InsertMenuItemW(state->menu, exit_id, TRUE, &menu_item);
+        InsertMenuItemW(menu, exit_id, TRUE, &menu_item);
     }
+    HMENU old_menu = state->menu;
+    state->menu = menu;
     if (old_menu)
         DestroyMenu(old_menu);
 }
@@ -146,26 +142,18 @@ static void update(HWND hwnd, app_state_t *state)
 
     wchar_t day[3];
     wnsprintfW(day, sizeof(day) / sizeof(wchar_t), L"%d", date.day);
+    wchar_t month[3];
+    wnsprintfW(month, sizeof(month) / sizeof(wchar_t), L"%d", date.month);
+    wchar_t year[5];
+    wnsprintfW(year, sizeof(year) / sizeof(wchar_t), L"%d", date.year);
     if (state->local_digits)
     {
         day[0] += L'۰' - L'0';
         if (day[1])
             day[1] += L'۰' - L'0';
-    }
-
-    wchar_t month[3];
-    wnsprintfW(month, sizeof(month) / sizeof(wchar_t), L"%d", date.month);
-    if (state->local_digits)
-    {
         month[0] += L'۰' - L'0';
         if (month[1])
             month[1] += L'۰' - L'0';
-    }
-
-    wchar_t year[5];
-    wnsprintfW(year, sizeof(year) / sizeof(wchar_t), L"%d", date.year);
-    if (state->local_digits)
-    {
         year[0] += L'۰' - L'0';
         year[1] += L'۰' - L'0';
         year[2] += L'۰' - L'0';
@@ -191,8 +179,8 @@ static void update(HWND hwnd, app_state_t *state)
 #define appId "PersianCalendarWin32"
 struct Registry
 {
-    Registry(const Registry&) = delete;
-    void operator=(const Registry&) = delete;
+    Registry(const Registry &) = delete;
+    void operator=(const Registry &) = delete;
     Registry() : key(nullptr)
     {
         LONG status = RegCreateKeyExA(
@@ -376,6 +364,9 @@ void start()
 
     NOTIFYICONDATAW notify_icon_data;
     SecureZeroMemory(&notify_icon_data, sizeof(NOTIFYICONDATAW));
+    notify_icon_data.cbSize = sizeof(NOTIFYICONDATAW);
+    notify_icon_data.uCallbackMessage = ID_NOTIFY_ICON_CLICK;
+    notify_icon_data.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
     app_state_t state(&notify_icon_data);
     HWND hwnd = CreateWindowExA(0, appId, nullptr, 0, 0, 0, 0, 0, nullptr, nullptr, module, &state);
     if (!hwnd)
