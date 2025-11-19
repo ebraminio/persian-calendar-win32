@@ -161,7 +161,7 @@ static void update(HWND hwnd, app_state_t *state)
 
     wnsprintfW(state->notify_icon_data->szTip, sizeof(state->notify_icon_data->szTip) / sizeof(wchar_t),
                L"%ls، %ls %ls/%ls %ls",
-               weekdays[(st.wDayOfWeek + 1) % 7], day, months[(date.month - 1) % 12], month, year);
+               weekdays[(static_cast<size_t>(st.wDayOfWeek) + 1) % 7], day, months[(date.month - 1) % 12], month, year);
 
     // szTip allocated string is both used for the tooltip and first item of the menu
     create_menu(state, state->notify_icon_data->szTip);
