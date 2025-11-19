@@ -26,7 +26,7 @@ jobs:
       - name: Build EXE
         shell: cmd
         run: |
-          "C:\\Program Files (x86)\\LLVM\\bin\\clang" test.cc -fno-exceptions && a.exe && build.llvm.bat
+          "C:\\Program Files\\LLVM\\bin\\clang" test.cc -fno-exceptions && a.exe && build.llvm.bat
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
