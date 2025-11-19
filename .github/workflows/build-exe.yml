@@ -20,10 +20,10 @@ jobs:
         if: steps.cache-llvm.outputs.cache-hit != 'true'
         run: curl -L -o LLVM-21.1.6-win32.exe https://github.com/llvm/llvm-project/releases/download/llvmorg-21.1.6/LLVM-21.1.6-win32.exe
       - name: Install LLVM
-        run: .\LLVM-21.1.6-win32.exe /S
+        run: LLVM-21.1.6-win32.exe /S
       - name: Build EXE
         shell: cmd
-        run: "C:\\Program Files (x86)\\LLVM\\bin\\clang.exe" test.cc -fno-exceptions && a.exe && build.llvm.bat
+        run: "C:\\Program Files (x86)\\LLVM\\bin\\clang" test.cc -fno-exceptions && a.exe && build.llvm.bat
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
