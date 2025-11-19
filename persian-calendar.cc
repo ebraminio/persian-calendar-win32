@@ -275,17 +275,18 @@ static void enable_hidpi_and_dark_mode()
 #define ID_TIMER 1
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+    if (msg == WM_NCCREATE)
+    {
+        CREATESTRUCT *cs = reinterpret_cast<CREATESTRUCT *>(lparam);
+        app_state_t *state = reinterpret_cast<app_state_t *>(cs->lpCreateParams);
+        SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(state));
+        return TRUE;
+    }
+
     app_state_t *state = reinterpret_cast<app_state_t *>(
         GetWindowLongPtrA(hwnd, GWLP_USERDATA));
     switch (msg)
     {
-    case WM_NCCREATE:
-    {
-        CREATESTRUCT *cs = reinterpret_cast<CREATESTRUCT *>(lparam);
-        app_state_t *app_state = reinterpret_cast<app_state_t *>(cs->lpCreateParams);
-        SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(app_state));
-        return TRUE;
-    }
     case WM_CREATE:
         enable_hidpi_and_dark_mode();
         Registry().fill_app_state(state);
