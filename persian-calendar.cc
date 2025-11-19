@@ -137,8 +137,7 @@ static void update(HWND hwnd, app_state_t *state)
 {
     SYSTEMTIME st;
     GetLocalTime(&st);
-    unsigned jdn = gregorian_to_jdn(st.wYear, st.wMonth, st.wDay);
-    persian_date_t date = jdn_to_persian(jdn);
+    persian_date_t date = gregorian_to_persian(st.wYear, st.wMonth, st.wDay);
 
     wchar_t day[3];
     wnsprintfW(day, sizeof(day) / sizeof(wchar_t), L"%d", date.day);
@@ -162,7 +161,7 @@ static void update(HWND hwnd, app_state_t *state)
 
     wnsprintfW(state->notify_icon_data->szTip, sizeof(state->notify_icon_data->szTip) / sizeof(wchar_t),
                L"%ls، %ls %ls/%ls %ls",
-               weekdays[(jdn + 3) % 7], day, months[(date.month - 1) % 12], month, year);
+               weekdays[(st.wDayOfWeek + 1) % 7], day, months[(date.month - 1) % 12], month, year);
 
     // szTip allocated string is both used for the tooltip and first item of the menu
     create_menu(state, state->notify_icon_data->szTip);

@@ -21,8 +21,7 @@ int main()
         uint32_t gy, gm, gd, py, pm, pd;
         if (sscanf(line, "%d,%d,%d,%d,%d,%d", &gy, &gm, &gd, &py, &pm, &pd) == 6)
         {
-            uint32_t jdn = gregorian_to_jdn(gy, gm, gd);
-            persian_date_t persian_date = jdn_to_persian(jdn);
+            persian_date_t persian_date = gregorian_to_persian(gy, gm, gd);
             if (persian_date.year != py || persian_date.month != pm || persian_date.day != pd)
             {
                 printf("Error in %s", line);
