@@ -21,7 +21,8 @@ jobs:
         run: |
           curl -L -o LLVM-21.1.6-win32.exe https://github.com/llvm/llvm-project/releases/download/llvmorg-21.1.6/LLVM-21.1.6-win32.exe
       - name: Install LLVM
-        run: LLVM-21.1.6-win32.exe /S
+        run: |
+          .\LLVM-21.1.6-win32.exe /S
       - name: Build EXE
         shell: cmd
         run: |
