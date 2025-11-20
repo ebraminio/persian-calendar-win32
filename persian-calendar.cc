@@ -272,7 +272,6 @@ static void enable_hidpi_and_dark_mode()
 }
 
 const unsigned notifyClickId = WM_USER + 1;
-#define ID_TIMER 1
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     app_state_t *state = reinterpret_cast<app_state_t *>(
@@ -348,7 +347,7 @@ void start()
     if (!hwnd)
         ExitProcess(EXIT_FAILURE);
 
-    // On create
+    // Initiation
     NOTIFYICONDATAW notify_icon_data;
     SecureZeroMemory(&notify_icon_data, sizeof(NOTIFYICONDATAW));
     app_state_t state(&notify_icon_data);
@@ -362,7 +361,7 @@ void start()
         state.notify_icon_data->hWnd = hwnd;
         Shell_NotifyIconW(NIM_ADD, state.notify_icon_data);
         update(hwnd, &state);
-        SetTimer(hwnd, ID_TIMER, 60000, nullptr);
+        SetTimer(hwnd, 1 /*timer id*/, 60000, nullptr);
     }
 
     // Main loop
@@ -373,7 +372,7 @@ void start()
         DispatchMessageA(&msg);
     }
 
-    // On destroy
+    // Finalize
     {
         Shell_NotifyIconW(NIM_DELETE, state.notify_icon_data);
         DestroyIcon(state.notify_icon_data->hIcon);
