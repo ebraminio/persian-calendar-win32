@@ -18,10 +18,11 @@ Installation
 Build
 -----
 
-* Windows with MSVC
+Windows with MSVC
+* Find a 32bit llvm installation file from, e.g. LLVM-18.1.8-win32.exe,
+from https://releases.llvm.org/download.html
+* Make sure Visual Studio is installed from llvm (llvm uses Visual Studio provided headers)
+* Run build.bat
 
-Find and 'Developer Command Prompt for VS 2022' in start menu, cd into the cloned folder and run build.bat.
-
-* MingW in Linux/macOS
-
-`./build.sh`
+MingW in Linux/macOS
+* `./build.sh`
