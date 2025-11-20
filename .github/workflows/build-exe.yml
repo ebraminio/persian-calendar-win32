@@ -25,10 +25,13 @@ jobs:
         run: |
           $p = Start-Process -FilePath ".\LLVM-21.1.6-win32.exe" -ArgumentList "/S" -PassThru
           $p.WaitForExit()
-      - name: Build EXE
+      - run: Run the tests
         shell: cmd
         run: |
           "C:\\Program Files (x86)\\LLVM\\bin\\clang" test.cc -fno-exceptions -o test.exe && test.exe
+      - name: Build EXE
+        shell: cmd
+        run: |
           build.bat
 
       - name: Set up Python
