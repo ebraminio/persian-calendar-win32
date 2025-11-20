@@ -1,6 +1,6 @@
-The most simple way to display Persian calendar as a tray icon in your Windows machine.
+A simple and small (5kb) way to display Persian calendar as a tray icon in your Windows machine.
 
-ساده‌ترین برنامهٔ نمایش تقویم فارسی به‌عنوان یک آیکون در نوار اعلان ویندوز.
+برنامهٔ سادهٔ و کوچک (۵ کیلوبایت) نمایش تقویم فارسی به‌عنوان یک آیکون در نوار اعلان ویندوز.
 
 It looks something like this
 
