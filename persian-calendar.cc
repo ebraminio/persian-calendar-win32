@@ -52,7 +52,6 @@ static HICON create_text_icon(HDC hdc, const wchar_t *text, bool black_backgroun
     return hIcon;
 }
 
-#define ID_NOTIFY_ICON_CLICK (WM_USER + 1)
 struct app_state_t
 {
     NOTIFYICONDATAW *notify_icon_data;
@@ -272,6 +271,7 @@ static void enable_hidpi_and_dark_mode()
     }
 }
 
+const unsigned notifyClickId = WM_USER + 1;
 #define ID_TIMER 1
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -288,7 +288,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     case WM_TIMER:
         update(hwnd, state);
         return 0;
-    case ID_NOTIFY_ICON_CLICK:
+    case notifyClickId:
         if (lparam == WM_LBUTTONUP || lparam == WM_RBUTTONUP)
         {
             POINT p;
@@ -344,18 +344,19 @@ void start()
             ExitProcess(EXIT_FAILURE);
     }
 
-    NOTIFYICONDATAW notify_icon_data;
-    SecureZeroMemory(&notify_icon_data, sizeof(NOTIFYICONDATAW));
-    notify_icon_data.cbSize = sizeof(NOTIFYICONDATAW);
-    notify_icon_data.uCallbackMessage = ID_NOTIFY_ICON_CLICK;
-    notify_icon_data.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
-    app_state_t state(&notify_icon_data);
     HWND hwnd = CreateWindowExA(0, appId, nullptr, 0, 0, 0, 0, 0, nullptr, nullptr, module, nullptr);
     if (!hwnd)
         ExitProcess(EXIT_FAILURE);
 
+    // On create
+    NOTIFYICONDATAW notify_icon_data;
+    SecureZeroMemory(&notify_icon_data, sizeof(NOTIFYICONDATAW));
+    app_state_t state(&notify_icon_data);
     {
         enable_hidpi_and_dark_mode();
+        notify_icon_data.cbSize = sizeof(NOTIFYICONDATAW);
+        notify_icon_data.uCallbackMessage = notifyClickId;
+        notify_icon_data.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
         SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(&state));
         Registry().fill_app_state(&state);
         state.notify_icon_data->hWnd = hwnd;
@@ -363,12 +364,16 @@ void start()
         update(hwnd, &state);
         SetTimer(hwnd, ID_TIMER, 60000, nullptr);
     }
+
+    // Main loop
     MSG msg;
     while (GetMessageA(&msg, nullptr, 0, 0) > 0)
     {
         TranslateMessage(&msg);
         DispatchMessageA(&msg);
     }
+
+    // On destroy
     {
         Shell_NotifyIconW(NIM_DELETE, state.notify_icon_data);
         DestroyIcon(state.notify_icon_data->hIcon);
