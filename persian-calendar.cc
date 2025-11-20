@@ -275,14 +275,6 @@ static void enable_hidpi_and_dark_mode()
 #define ID_TIMER 1
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-    if (msg == WM_NCCREATE)
-    {
-        CREATESTRUCT *cs = reinterpret_cast<CREATESTRUCT *>(lparam);
-        app_state_t *state = reinterpret_cast<app_state_t *>(cs->lpCreateParams);
-        SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(state));
-        return TRUE;
-    }
-
     app_state_t *state = reinterpret_cast<app_state_t *>(
         GetWindowLongPtrA(hwnd, GWLP_USERDATA));
     switch (msg)
@@ -358,12 +350,13 @@ void start()
     notify_icon_data.uCallbackMessage = ID_NOTIFY_ICON_CLICK;
     notify_icon_data.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
     app_state_t state(&notify_icon_data);
-    HWND hwnd = CreateWindowExA(0, appId, nullptr, 0, 0, 0, 0, 0, nullptr, nullptr, module, &state);
+    HWND hwnd = CreateWindowExA(0, appId, nullptr, 0, 0, 0, 0, 0, nullptr, nullptr, module, nullptr);
     if (!hwnd)
         ExitProcess(EXIT_FAILURE);
 
     {
         enable_hidpi_and_dark_mode();
+        SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(&state));
         Registry().fill_app_state(&state);
         state.notify_icon_data->hWnd = hwnd;
         Shell_NotifyIconW(NIM_ADD, state.notify_icon_data);
