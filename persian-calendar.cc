@@ -287,20 +287,10 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         GetWindowLongPtrA(hwnd, GWLP_USERDATA));
     switch (msg)
     {
-    case WM_CREATE:
-        enable_hidpi_and_dark_mode();
-        Registry().fill_app_state(state);
-        state->notify_icon_data->hWnd = hwnd;
-        Shell_NotifyIconW(NIM_ADD, state->notify_icon_data);
-        update(hwnd, state);
-        SetTimer(hwnd, ID_TIMER, 60000, nullptr);
-        return 0;
     case WM_CLOSE:
         DestroyWindow(hwnd);
         return 0;
     case WM_DESTROY:
-        Shell_NotifyIconW(NIM_DELETE, state->notify_icon_data);
-        DestroyIcon(state->notify_icon_data->hIcon);
         PostQuitMessage(EXIT_SUCCESS);
         return 0;
     case WM_TIMER:
@@ -372,11 +362,23 @@ void start()
     if (!hwnd)
         ExitProcess(EXIT_FAILURE);
 
+    {
+        enable_hidpi_and_dark_mode();
+        Registry().fill_app_state(&state);
+        state.notify_icon_data->hWnd = hwnd;
+        Shell_NotifyIconW(NIM_ADD, state.notify_icon_data);
+        update(hwnd, &state);
+        SetTimer(hwnd, ID_TIMER, 60000, nullptr);
+    }
     MSG msg;
     while (GetMessageA(&msg, nullptr, 0, 0) > 0)
     {
         TranslateMessage(&msg);
         DispatchMessageA(&msg);
+    }
+    {
+        Shell_NotifyIconW(NIM_DELETE, state.notify_icon_data);
+        DestroyIcon(state.notify_icon_data->hIcon);
     }
 
     UnregisterClassA(appId, module);
