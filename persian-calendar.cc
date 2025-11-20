@@ -247,28 +247,28 @@ private:
     constexpr static char *black_background_key = const_cast<char *>("BlackBackground");
 };
 
-static void enable_hidpi_and_dark_mode()
+static void enable_hidpi()
 {
     HMODULE user32 = LoadLibraryA("user32.dll");
-    if (user32)
-    {
-        typedef BOOL(WINAPI * func_t)(DPI_AWARENESS_CONTEXT);
-        func_t func = reinterpret_cast<func_t>(reinterpret_cast<void *>(
-            GetProcAddress(user32, "SetProcessDpiAwarenessContext")));
-        if (func)
-            func(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-        FreeLibrary(user32);
-    }
+    if (!user32) return;
+    typedef BOOL(WINAPI * func_t)(DPI_AWARENESS_CONTEXT);
+    func_t func = reinterpret_cast<func_t>(reinterpret_cast<void *>(
+        GetProcAddress(user32, "SetProcessDpiAwarenessContext")));
+    if (func)
+        func(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+    FreeLibrary(user32);
+}
+
+static void enable_dark_mode_support()
+{
     HMODULE uxtheme = LoadLibraryA("uxtheme.dll");
-    if (uxtheme)
-    {
-        typedef INT(WINAPI * func_t)(INT); // undocumented SetPreferredAppMode's signature
-        func_t func = reinterpret_cast<func_t>(reinterpret_cast<void *>(
-            GetProcAddress(uxtheme, MAKEINTRESOURCEA(135))));
-        if (func)
-            func(/*Allow dark*/ 1);
-        FreeLibrary(uxtheme);
-    }
+    if (!uxtheme) return;
+    typedef INT(WINAPI * func_t)(INT); // undocumented SetPreferredAppMode's signature
+    func_t func = reinterpret_cast<func_t>(reinterpret_cast<void *>(
+        GetProcAddress(uxtheme, MAKEINTRESOURCEA(135))));
+    if (func)
+        func(/*Allow dark*/ 1);
+    FreeLibrary(uxtheme);
 }
 
 const unsigned notifyClickId = WM_USER + 1;
@@ -352,7 +352,8 @@ void start()
     SecureZeroMemory(&notify_icon_data, sizeof(NOTIFYICONDATAW));
     app_state_t state(&notify_icon_data);
     {
-        enable_hidpi_and_dark_mode();
+        enable_hidpi();
+        enable_dark_mode_support();
         notify_icon_data.cbSize = sizeof(NOTIFYICONDATAW);
         notify_icon_data.uCallbackMessage = notifyClickId;
         notify_icon_data.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP;
