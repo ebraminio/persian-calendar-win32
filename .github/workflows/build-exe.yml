@@ -28,7 +28,8 @@ jobs:
       - name: Build EXE
         shell: cmd
         run: |
-          "C:\\Program Files (x86)\\LLVM\\bin\\clang" test.cc -fno-exceptions && a.exe && build.llvm.bat
+          "C:\\Program Files (x86)\\LLVM\\bin\\clang" test.cc -fno-exceptions -o test.exe && test.exe
+          build.bat
 
       - name: Set up Python
         uses: actions/setup-python@v5
