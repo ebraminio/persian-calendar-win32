@@ -288,13 +288,18 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
         update(hwnd, state);
         return 0;
     case notifyClickId:
-        if (lparam == WM_LBUTTONUP || lparam == WM_RBUTTONUP)
+        if (lparam == WM_RBUTTONUP)
         {
             POINT p;
             GetCursorPos(&p);
             SetForegroundWindow(hwnd);
             TrackPopupMenu(state->menu, TPM_RIGHTALIGN | TPM_RIGHTBUTTON | TPM_LAYOUTRTL,
                            p.x, p.y, 0, hwnd, nullptr);
+        }
+        else if (lparam == WM_LBUTTONUP)
+        {
+            CreateWindowExA(0, "BareboneWindow", "Barebone Window", WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+                            CW_USEDEFAULT, CW_USEDEFAULT, 400, 300, nullptr, nullptr, GetModuleHandleA(nullptr), nullptr);
         }
         return 0;
     case WM_COMMAND:
@@ -324,6 +329,18 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     return DefWindowProcA(hwnd, msg, wparam, lparam);
 }
 
+static LRESULT CALLBACK MainWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+    switch (msg)
+    {
+    case WM_CLOSE:
+        DestroyWindow(hwnd);
+        return 0;
+    default:
+        return DefWindowProcA(hwnd, msg, wparam, lparam);
+    }
+}
+
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 extern "C" [[noreturn]] void start();
@@ -333,6 +350,17 @@ void start()
     if (!mutex || GetLastError() == ERROR_ALREADY_EXISTS)
         ExitProcess(EXIT_FAILURE);
     HMODULE module = reinterpret_cast<HMODULE>(&__ImageBase);
+
+    {
+        WNDCLASSEXA wc;
+        SecureZeroMemory(&wc, sizeof(WNDCLASSEXA));
+        wc.cbSize = sizeof(WNDCLASSEXW);
+        wc.hInstance = module;
+        wc.lpfnWndProc = MainWndProc;
+        wc.lpszClassName = "MainWindow";
+        wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
+        RegisterClassExA(&wc);
+    }
 
     {
         WNDCLASSEXA wc;
