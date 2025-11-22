@@ -324,13 +324,15 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     return DefWindowProcA(hwnd, msg, wparam, lparam);
 }
 
+extern "C" IMAGE_DOS_HEADER __ImageBase;
+
 extern "C" [[noreturn]] void start();
 void start()
 {
     HANDLE mutex = CreateMutexA(nullptr, 0, const_cast<char *>(appId));
     if (!mutex || GetLastError() == ERROR_ALREADY_EXISTS)
         ExitProcess(EXIT_FAILURE);
-    HMODULE module = GetModuleHandleA(nullptr);
+    HMODULE module = reinterpret_cast<HMODULE>(&__ImageBase);
 
     {
         WNDCLASSEXA wc;
